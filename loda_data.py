@@ -10,6 +10,9 @@ class LoadData:
         self.table_header = self.table.header_row_range.value
         self.table_values = self.table.data_body_range.value
         self.selectedranges = xw.sheets.active.api.Application.Selection.Value
+        self.settings = [xw.sheets.active.range("psd_name").value,\
+                        xw.sheets.active.range("export_folder").value,\
+                        xw.sheets.active.range("file_format").value]
     def read_range(self):
         """ This function reads the file and returns the data """
         ans  = []
@@ -67,15 +70,17 @@ class LoadData:
 
     def selected_skus(self):
         """ This function returns the selected SKUs """
+
+        load_data = self.fiter_data(self.read_range())
         if self.selectedranges is not None:
             sku_list = [i[0] for i in self.selectedranges if i is not None]
             print(sku_list)
-            load_data = self.fiter_data(self.read_range())
+            
             return [] if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
-
+        return load_data
 
 
 
 if __name__ == '__main__':
     ld = LoadData()
-    ld.selected_skus()
+    print(ld.selected_skus())
