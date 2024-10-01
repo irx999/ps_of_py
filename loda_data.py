@@ -72,12 +72,17 @@ class LoadData:
         """ This function returns the selected SKUs """
 
         load_data = self.fiter_data(self.read_range())
+
         if self.selectedranges is not None:
-            sku_list = [i[0] for i in self.selectedranges if i is not None]
-            print(sku_list)
-            
-            return [] if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
-        return load_data
+            if isinstance(self.selectedranges,str):
+                sku_list = [self.selectedranges]
+            else:
+                sku_list = [i[0] for i in self.selectedranges if i is not None]
+                print(sku_list)
+        else:
+            sku_list = load_data
+        return [] if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
+
 
 
 
