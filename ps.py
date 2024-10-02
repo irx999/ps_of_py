@@ -8,7 +8,7 @@ from photoshop import Session
 
 class Photoshop:
     """Photoshop 类"""
-    def __init__(self,psd_name,export_folder,file_format="png"):
+    def __init__(self,psd_name,export_folder,file_format="png",suffix = ""):
         """
         :param psd_name: psd文件名
         :param export_folder: 导出文件夹名  
@@ -17,6 +17,7 @@ class Photoshop:
         self.psd_name = psd_name
         self.export_folder = f"{os.path.split(os.path.realpath(__file__ ))[0]}/{export_folder}"
         self.file_format = file_format
+        self.suffix = suffix
         #检测传入的文件夹是否存在
         if not os.path.exists(self.export_folder):
             os.makedirs(self.export_folder)
@@ -52,14 +53,16 @@ class Photoshop:
         :param text_dict: {"test1": "修改test1","组2":{"test3":"修改test3","test4":["修改test4", 38]}}
         :param layer_dict: {"图片1":True,"组1":{"图片1":True,"图片2": False}}
         """
+        
 
 
 
-
-         # 遍历导入的文本名，设置文本内容和大小
+         # 创建一个修改过字体大小的缓存
         text_size_cache ={}
-        for layer_name, text_content in text_dict.items():
 
+
+        # 遍历所有文本图层，修改文本内容
+        for layer_name, text_content in text_dict.items():
             try:
                 # 文本图层修改
                 match text_content:
@@ -107,29 +110,42 @@ class Photoshop:
                                     if  key +" 拷贝" in layer_set_name:
                                         layer_set.artLayers.getByName(key+" 拷贝").textItem.contents = value[0]
                                         layer_set.artLayers.getByName(key+" 拷贝").textItem.size = value[1]
-                                        
-
             except ValueError as e:
-                print(f"设置{layer_name}错误\n{e}")
+                print(f"设置文本{layer_name}错误\n{e}")
 
         # 遍历导入的图层名，设置图层可见性
+        layer_all_set_name = [name.name for name in self.doc.layerSets]
         for layer_name, value in layer_dict.items():
             try:
                 match value:
+                    case bool():
+                        # 如果是单个图层，直接设置可见性
+                        if  layer_name in layer_all_set_name:
+                            self.doc.layerSets.getByName(layer_name).visible = True
+                        else:
+                            self.doc.artLayers.getByName(value).visible = True
                     case dict():
                         # 如果shape组中有子组，则需要遍历子组
                         layer_set = self.doc.layerSets.getByName(layer_name)
+                        layer_set_name = [name.name for name in layer_set.layerSets]
                         for key, visible in value.items():
-                            layer_set.artLayers.getByName(key).visible =  visible
+                            if key in layer_set_name:
+                                layer_set.layerSets.getByName(key).visible = visible
+                            else:
+                                layer_set.artLayers.getByName(key).visible = visible
                     case _:
-                        # 如果是单个图层，直接设置可见性
-                        self.doc.artLayers.getByName(layer_name).visible =  value
+                        # 没有成功匹配到任何情况，报错
+                        print(f"设置{layer_name}错误\n")
             except ValueError as e:
                 print(f"设置{layer_name}错误\n{e}")
 
 
+
+        # 如果文件名是数字，则去掉小数点和后面的数字
+        if  isinstance(export_name, float):
+            export_name = str(export_name).split(".",maxsplit=1)[0]
         # 保存为指定格式
-        self.doc.saveAs(f'{self.export_folder}/{export_name}.{self.file_format}',
+        self.doc.saveAs(f'{self.export_folder}/{export_name}{self.suffix}.{self.file_format}',
                     self.options,
                     asCopy=True)
         print(f"导出{export_name}.{self.file_format}到{self.export_folder}成功")
@@ -150,14 +166,24 @@ class Photoshop:
         for layer_name, value in layer_dict.items():
             try:
                 match value:
+                    case bool():
+                        # 如果是单个图层，直接设置可见性
+                        if  layer_name in layer_all_set_name:
+                            self.doc.layerSets.getByName(layer_name).visible = False
+                        else:
+                            self.doc.artLayers.getByName(value).visible = False
                     case dict():
                         # 如果shape组中有子组，则需要遍历子组
                         layer_set = self.doc.layerSets.getByName(layer_name)
+                        layer_set_name = [name.name for name in layer_set.layerSets]
                         for key, visible in value.items():
-                            layer_set.artLayers.getByName(key).visible = not visible
+                            if key in layer_set_name:
+                                layer_set.layerSets.getByName(key).visible = not visible
+                            else:
+                                layer_set.artLayers.getByName(key).visible = not visible
                     case _:
-                        # 如果是单个图层，直接设置可见性
-                        self.doc.artLayers.getByName(layer_name).visible = not value
+                        # 没有成功匹配到任何情况，报错
+                        print(f"设置{layer_name}错误\n")
             except ValueError as e:
                 print(f"设置{layer_name}错误\n{e}")
 

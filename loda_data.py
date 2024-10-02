@@ -12,7 +12,9 @@ class LoadData:
         self.selectedranges = xw.sheets.active.api.Application.Selection.Value
         self.settings = [xw.sheets.active.range("psd_name").value,\
                         xw.sheets.active.range("export_folder").value,\
-                        xw.sheets.active.range("file_format").value]
+                        xw.sheets.active.range("file_format").value,\
+                        xw.sheets.active.range("suffix").value,]
+
     def read_range(self):
         """ This function reads the file and returns the data """
         ans  = []
@@ -60,8 +62,6 @@ class LoadData:
                                 layer_dict[layer_set][i[header]] = i[header] is not None
 
 
-
-
             ans_dct[i['导出文件名']]= [text_dict,layer_dict]
         return ans_dct
 
@@ -74,8 +74,9 @@ class LoadData:
         load_data = self.fiter_data(self.read_range())
 
         if self.selectedranges is not None:
-            if isinstance(self.selectedranges,str):
+            if isinstance(self.selectedranges,str) or isinstance(self.selectedranges,float):
                 sku_list = [self.selectedranges]
+                print(sku_list)
             else:
                 sku_list = [i[0] for i in self.selectedranges if i is not None]
                 print(sku_list)
