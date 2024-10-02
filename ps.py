@@ -31,10 +31,10 @@ class Photoshop:
         self.doc = doc
 
         match self.file_format:
-            case "png":
-                self.options = ps_session.PNGSaveOptions()
             case "jpg" | "jpeg":
                 self.options = ps_session.JPEGSaveOptions()
+            case _:
+                self.options = ps_session.PNGSaveOptions()
 
 
     def test(self):
@@ -53,9 +53,6 @@ class Photoshop:
         :param text_dict: {"test1": "修改test1","组2":{"test3":"修改test3","test4":["修改test4", 38]}}
         :param layer_dict: {"图片1":True,"组1":{"图片1":True,"图片2": False}}
         """
-        
-
-
 
          # 创建一个修改过字体大小的缓存
         text_size_cache ={}
