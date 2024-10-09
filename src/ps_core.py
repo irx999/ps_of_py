@@ -1,0 +1,99 @@
+""" This is a python script for photosop"""
+
+
+import os
+from photoshop import Session
+
+from src.ps_layer_text_changer import change_text_layer,restore_text_layer_font_size
+from src.ps_layer_visible_changer import change_layer_visible,restore_layer_visible
+
+class Photoshop:
+    """Photoshop 类"""
+    def __init__(self,psd_name,export_folder,file_format="png",suffix = ""):
+        """
+        :param psd_name: psd文件名
+        :param export_folder: 导出文件夹名  
+        :param file_format: 导出文件格式，默认为png
+        """
+        self.psd_name = psd_name
+        file_path = os.path.split(os.path.abspath(__file__ ))[0]
+        self.export_folder = f"{file_path}/{export_folder}".replace("src/","")
+        self.file_format = file_format
+        self.suffix = suffix
+        #检测传入的文件夹是否存在
+        if not os.path.exists(self.export_folder):
+            os.makedirs(self.export_folder)
+            print(f"创建文件夹{self.export_folder}成功")
+        #创建psd会话
+        with Session(action=self.psd_name) as ps_session:
+            doc = ps_session.active_document
+        self.ps_session = ps_session
+        self.doc = doc
+
+        match self.file_format:
+            case "jpg" | "jpeg":
+                self.options = ps_session.JPEGSaveOptions()
+            case _:
+                self.options = ps_session.PNGSaveOptions()
+
+
+    def test(self):
+        """ 测试 """
+        for layer in self.doc.layerSets.getByName("123").artLayers:
+            print(layer.name)
+        self.doc.layerSets.getByName("123").artLayers.getByName("test3").visible = False
+
+    def core(self, export_name: str,
+                    text_dict: dict,
+                    layer_dict: dict,
+                        ) -> None:
+        """
+        修改psd文件，并保存为指定格式
+        :param export_name: 导出文件名
+        :param text_dict: {"test1": "修改test1","组2":{"test3":"修改test3","test4":["修改test4", 38]}}
+        :param layer_dict: {"图片1":True,"组1":{"图片1":True,"图片2": False}}
+        """
+        layer_all_set_name = [name.name for name in self.doc.layerSets]
+
+        # 修改文字层 并返回一个
+        text_size_cache = change_text_layer(self.doc, text_dict)
+        # 遍历导入的图层名，设置图层可见性
+        change_layer_visible(self.doc, layer_all_set_name,layer_dict)
+
+
+        # 如果文件名是数字，则去掉小数点和后面的数字
+        if  isinstance(export_name, float):
+            export_name = str(export_name).split(".",maxsplit=1)[0]
+        # 保存为指定格式
+        self.doc.saveAs(f'{self.export_folder}/{export_name}{self.suffix}.{self.file_format}',
+                    self.options,
+                    asCopy=True)
+        print(f"导出{export_name}.{self.file_format}到{self.export_folder}成功")
+
+
+        # 保存后 将字体大小恢复修改前的状态
+        restore_text_layer_font_size(self.doc, text_size_cache)
+        #保存后  将图层可见性恢复修改前的状态
+        restore_layer_visible(self.doc, layer_all_set_name,layer_dict)
+
+
+
+if __name__ == '__main__':
+    ps = Photoshop(psd_name='test.psd', export_folder='测试导出')
+
+
+    textdict = {"test1": "修改test1", "test2":["修改test2", 123],\
+                 "组2":{"test3":"修改test3","test4":["修改test4", 38]}}
+    textdict = {"test1": "修改test1", "test2":["修改test2", 123],}
+
+
+    layerdict = {"图片1":True,"组1":{"图片1":True,"图片2": False}}
+
+
+
+    ps.core(export_name='test',
+            text_dict = textdict,
+            layer_dict = layerdict,
+    )
+
+    # ps.test()
