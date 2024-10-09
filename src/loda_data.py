@@ -30,7 +30,8 @@ class LoadData:
                         self.sheet.range("export_folder").value,\
                         self.sheet.range("file_format").value,\
                         self.sheet.range("suffix").value,]
-        except:
+        except ValueError as e:
+            print(f"无法读取到表格中的配置信息,将使用默认配置\n{e}")
             settings = [None,"导出图片","png",""]
         return settings
 
@@ -100,8 +101,9 @@ class LoadData:
                 sku_list = [i[0] for i in self.selectedranges if i is not None]
                 print(sku_list)
         else:
-            sku_list = load_data
-        return [] if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
+            return None
+            #sku_list = load_data
+        return None if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
 
 
 

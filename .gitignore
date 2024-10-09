@@ -4,3 +4,4 @@ test_env/
 *.ipynb
 *测试导出
 *图片
+*pyc

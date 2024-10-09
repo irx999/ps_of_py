@@ -11,17 +11,19 @@ def main():
     ps = Photoshop(*lodadata.settings)
     text_data = lodadata.selected_skus()
     # 遍历整个字典
-    for k, v in text_data.items():
-        ps.core(export_name=k,
-            text_dict = v[0],
-            layer_dict = v[1],
-        )
+    if text_data:
+        for export_name, v in text_data.items():
+            ps.core(export_name=export_name,
+                text_dict = v[0],
+                layer_dict = v[1],
+            )
 
 def test():
     """ 测试专用函数 """
-    ld = LoadData(sheet_name="Sheet1",table_name="表1")
-    print(ld)
-
+    # ld = LoadData(sheet_name="Sheet1",table_name="表1")
+    # print(ld)
+    ps = Photoshop(psd_name="MB")
+    print(ps.layer_all_set_name)
 
 if __name__ == '__main__':
     test()
