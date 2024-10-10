@@ -54,7 +54,7 @@ def change_text_layer(ps_doc,text_dict:dict) -> dict:
         except ValueError as e:
             print(f"设置文本{layer_name}错误\n{e}")
 
-        return text_size_cache
+    return text_size_cache
 
 
 def restore_text_layer_font_size(ps_doc,text_size_cache:dict) -> dict:

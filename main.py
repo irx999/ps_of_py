@@ -23,7 +23,7 @@ def test():
     # ld = LoadData(sheet_name="Sheet1",table_name="表1")
     # print(ld)
     ps = Photoshop(psd_name="MB")
-    print(ps.layer_all_set_name)
+    print(ps.layer_outermost_set_name)
 
 if __name__ == '__main__':
-    test()
+    main()
