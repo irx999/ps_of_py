@@ -26,7 +26,8 @@ class LoadData:
     def read_settings(self):
         """ This function reads the export settings """
         try:
-            settings = [self.sheet.range("psd_name").value,\
+            settings = [self.sheet.range("psd_file_path").value,\
+                        self.sheet.range("psd_name").value,\
                         self.sheet.range("export_folder").value,\
                         self.sheet.range("file_format").value,\
                         self.sheet.range("suffix").value,]

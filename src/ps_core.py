@@ -9,7 +9,8 @@ from src.ps_layer_visible_changer import change_layer_visible,restore_layer_visi
 
 class Photoshop:
     """Photoshop 类"""
-    def __init__(self,psd_name,export_folder ="测试导出文件夹",file_format="png",suffix = ""):
+    def __init__(self,psd_file_path:str =None,psd_name:str="test",\
+                 export_folder ="测试导出文件夹",file_format="png",suffix = ""):
         """
         初始化Photoshop类
 
@@ -27,8 +28,10 @@ class Photoshop:
         if not os.path.exists(self.export_folder):
             os.makedirs(self.export_folder)
             print(f"创建文件夹{self.export_folder}成功")
+        if psd_file_path is None:
+            psd_file_path = file_path
         #创建psd会话
-        with Session(file_path=f"{file_path}/psd/{psd_name}.psd", action="open") as ps_session:
+        with Session(file_path=f"{psd_file_path}/{psd_name}.psd", action="open") as ps_session:
             doc = ps_session.active_document
             print(ps_session.echo(ps_session.active_document.name))
         #self.ps_session = ps_session
