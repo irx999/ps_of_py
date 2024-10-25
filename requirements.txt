@@ -1,0 +1,3 @@
+pandas
+xlwings
+photoshop-python-api

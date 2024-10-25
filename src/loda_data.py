@@ -60,11 +60,12 @@ class LoadData:
                         case str(setting):
                             _ =i[header].split("丨")
                             if len(_) == 1:
-                                setting = _[0]
+                                setting = str(int(_[0])) if isinstance(_[0],float) else str(_[0])
                             else:
                                 setting = [_[0],int(_[1])]
                         case _:
                             setting = i[header]
+                    #setting = str(int(setting)) if isinstance(setting,float) else str(setting)
                     match header.split("丨"):
                         case "文本","",str(name):
                             text_dict[name] = setting
