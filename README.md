@@ -21,3 +21,5 @@
 ### load_data.py
     读取设定的文件，返回需要的参数和信息
     :param psd_name: psd文件名
+
+{123,123}
