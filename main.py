@@ -1,7 +1,7 @@
 """ 主启动函数 """
 
 from src.ps_core import Photoshop
-from src.loda_data import LoadData
+from src.load_data import LoadData
 
 
 def main():
@@ -10,12 +10,12 @@ def main():
     lodadata  = LoadData()
     ps = Photoshop(*lodadata.settings)
     text_data = lodadata.selected_skus()
+    print(text_data)
     # 遍历整个字典
     if text_data:
         for export_name, v in text_data.items():
             ps.core(export_name=export_name,
-                text_dict = v[0],
-                layer_dict = v[1],
+                input_data = v
             )
 
 def test():
