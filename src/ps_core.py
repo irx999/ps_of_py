@@ -13,10 +13,11 @@ class Photoshop:
                  export_folder ="测试导出文件夹",file_format="png",suffix = ""):
         """
         初始化Photoshop类
-
-        :param psd_name: psd文件名
-        :param export_folder: 导出文件夹名  
+        :param psd_file_path: psd文件路径,默认工作目录
+        :param psd_name: psd文件名,默认test
+        :param export_folder: 导出文件夹名, 是在默认工作目录下面创建,
         :param file_format: 导出文件格式，默认为png
+        :param suffix: 导出文件名后缀
         """
 
         file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","")
@@ -48,6 +49,7 @@ class Photoshop:
 
     def core(self, export_name: str,
                     input_data: dict,
+                    # keep_modification_parameters: list
                         ) -> None:
         """ 
         :param export_name: 导出文件名

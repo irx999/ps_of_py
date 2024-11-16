@@ -10,6 +10,7 @@ class LoadData:
             self.sheet = xw.books.active.sheets[sheet_name]
         else:
             self.sheet =  xw.sheets.active
+        # 读取表格
         self.table = self.sheet.tables[table_name]
         # 读取表格的表头
         self.table_header = self.table.header_row_range.value
@@ -36,74 +37,17 @@ class LoadData:
             settings = [None,"导出图片","png",""]
         return settings
 
-    def read_range(self):
+    def read_range(self) -> list:
         """ This function reads the file and returns the data """
-        ans  = []
+        ans_list = []
 
 
         for i in  self.table_values:
             dct = {k:v for k,v in zip_longest(self.table_header,i,fillvalue=None)}
-            ans.append(dct)
-        return ans
-
-    def abc(self,input_data):
-        """ This function filters the data """
-        ans_dct = {}
-        for i in input_data:
-            text_dict = {}
-            layer_dict = {}
-            for header in i.keys():
-                if i[header]is not None:
-                    match i[header]:
-                        case None:
-                            setting = None
-                        case str(setting):
-                            _ =i[header].split("丨")
-                            if len(_) == 1:
-                                setting = str(int(_[0])) if isinstance(_[0],float) else str(_[0])
-                            else:
-                                setting = [_[0],int(_[1])]
-                        case _:
-                            setting = i[header]
-                    #setting = str(int(setting)) if isinstance(setting,float) else str(setting)
-                    match header.split("丨"):
-                        case "文本","",str(name):
-                            text_dict[name] = setting
-                        case "文本",str(layer_set),str(name):
-                            if layer_set not in text_dict:
-                                text_dict[layer_set] = {name:setting}
-                            else:
-                                text_dict[layer_set][name] = setting
-
-                        case "可显性","",_:
-                            layer_dict[i[header]] = i[header] is not None
-                        case "可显性",str(layer_set),_:
-                            if layer_set not in layer_dict:
-                                layer_dict[layer_set] = {i[header]:i[header] is not None}
-                            else:
-                                layer_dict[layer_set][i[header]] = i[header] is not None
+            ans_list.append(dct)
+        return ans_list
 
 
-            ans_dct[i['导出文件名']]= [text_dict,layer_dict]
-        return ans_dct
-
-
-    def selected_skus(self):
-        """ This function returns the selected SKUs """
-
-        load_data = self.filter_data(self.read_range())
-
-        if self.selectedranges is not None:
-            if isinstance(self.selectedranges,str) or isinstance(self.selectedranges,float):
-                sku_list = [self.selectedranges]
-                print(sku_list)
-            else:
-                sku_list = [i[0] for i in self.selectedranges if i is not None]
-                print(sku_list)
-        else:
-            return None
-            #sku_list = load_data
-        return None if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
 
     def filter_data(self,input_data)->dict:
         """ This function filters the data """
@@ -124,26 +68,31 @@ class LoadData:
                                                     if layer_set == "" else \
                                                     [layer_set,layer_name]
                             match dct[header].split("丨"):
-                                case str(text),str(font_size):
+                                case str(text),str(font_size),str(font_color):
                                     layer_dict["文本内容"] = text
                                     layer_dict["字体大小"] = float(font_size)
+                                    layer_dict["字体颜色"] = font_color
                                 case _:
                                     layer_dict["文本内容"] = dct[header]
-                        # 匹配修改可显性图层属性
+                        # 匹配表头中修改可显性图层属性
                         case "可显性",str(layer_set_1),str(layer_set_2):
                             if layer_set_1 == "":
-                                layer_dict["图层路径"] = [layer_set_2]
-                            if layer_set_2 == "":
+                                layer_dict["图层路径"] = [layer_set_2]\
+                            # 这里如果两个图层组需要操作两次的话, 就会在表格中重复, excel 会自动多一个复制处理
+                            if layer_set_2 == "" or layer_set_2 in [str(i) for i in range(1,11)]:
                                 layer_dict["图层路径"] = [layer_set_1]
                             else:
                                 layer_dict["图层路径"] = [layer_set_1,layer_set_2]
+                            #匹配单元格内容
                             match dct[header].split("丨"):
+                                #如果是T或F, 则直接设置visible属性
                                 case str(layer_name),"T":
                                     layer_dict["图层路径"].append(layer_name)
                                     layer_dict["visible"] = True
                                 case str(layer_name),"F":
                                     layer_dict["图层路径"].append(layer_name)
                                     layer_dict["visible"] = False
+                                #如果没有, 默认为True
                                 case _:
                                     layer_dict["图层路径"].append(dct[header])
                                     layer_dict["visible"] = True
@@ -152,6 +101,24 @@ class LoadData:
             ans_dct[dct['导出文件名']] = layer_lst
         return ans_dct
 
+    def selected_skus(self):
+        """ This function returns the selected SKUs """
+
+        load_data = self.filter_data(self.read_range())
+
+
+        # 如果没有选择SKU, 则返回None
+        if self.selectedranges is not None:
+            if isinstance(self.selectedranges,str) or isinstance(self.selectedranges,float):
+                sku_list = [self.selectedranges]
+                print(sku_list)
+            else:
+                sku_list = [i[0] for i in self.selectedranges if i is not None]
+                print(sku_list)
+            # 这里筛选了选择的SKU在 在load_data中的数据
+            return None if sku_list == [] else {k:v for k,v in load_data.items() if k in sku_list}
+        else:
+            return None
 
 
 
