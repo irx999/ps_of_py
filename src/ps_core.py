@@ -2,10 +2,10 @@
 
 
 import os
+import time
 from photoshop import Session
 
-from src.ps_layer_text_changer import change_text_layer,restore_text_layer_font_size
-from src.ps_layer_visible_changer import change_layer_visible,restore_layer_visible
+from src.ps_layer_changer import layer_changer
 
 class Photoshop:
     """Photoshop 类"""
@@ -13,10 +13,11 @@ class Photoshop:
                  export_folder ="测试导出文件夹",file_format="png",suffix = ""):
         """
         初始化Photoshop类
-
-        :param psd_name: psd文件名
-        :param export_folder: 导出文件夹名  
+        :param psd_file_path: psd文件路径,默认工作目录
+        :param psd_name: psd文件名,默认test
+        :param export_folder: 导出文件夹名, 是在默认工作目录下面创建,
         :param file_format: 导出文件格式，默认为png
+        :param suffix: 导出文件名后缀
         """
 
         file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","")
@@ -30,11 +31,12 @@ class Photoshop:
             print(f"创建文件夹{self.export_folder}成功")
         if psd_file_path is None:
             psd_file_path = file_path
+            print(f"未传入psd文件路径，使用默认路径{psd_file_path}")
         #创建psd会话
         with Session(file_path=f"{psd_file_path}/{psd_name}.psd", action="open") as ps_session:
             doc = ps_session.active_document
-            print(ps_session.echo(ps_session.active_document.name))
-        #self.ps_session = ps_session
+            print("打开psd文件成功",ps_session.echo(ps_session.active_document.name))
+        self.ps_session = ps_session
         self.doc = doc
         # 最外层图层集
         self.layer_outermost_set_name = [_layerSets.name for _layerSets in self.doc.layerSets]
@@ -46,57 +48,69 @@ class Photoshop:
                 self.options = ps_session.PNGSaveOptions()
 
     def core(self, export_name: str,
-                    text_dict: dict,
-                    layer_dict: dict,
+                    input_data: dict,
+                    # keep_modification_parameters: list
                         ) -> None:
-        """
-        修改psd文件，并保存为指定格式
-
+        """ 
         :param export_name: 导出文件名
-        :param text_dict: {"test1": "修改test1","组2":{"test3":"修改test3","test4":["修改test4", 38]}}
-        :param layer_dict: {"图片1":True,"组1":{"图片1":True,"图片2": False}}
+        :param input_data: 图层属性数据
+        :return: None
         """
 
 
-        # 修改文字层 并返回一个
-        text_size_cache = change_text_layer(self.doc, text_dict)
-        # 遍历导入的图层名，设置图层可见性
-        change_layer_visible(self.doc, self.layer_outermost_set_name,layer_dict)
-
-
-        # 如果文件名是数字，则去掉小数点和后面的数字
-        if  isinstance(export_name, float):
-            export_name = str(export_name).split(".",maxsplit=1)[0]
-        # 保存为指定格式
+        #修改图层属性
+        data_cache = layer_changer(self.ps_session, input_data)
+        #保存图片
         self.doc.saveAs(f'{self.export_folder}/{export_name}{self.suffix}.{self.file_format}',
                     self.options,
                     asCopy=True)
         print(f"导出{export_name}.{self.file_format}到{self.export_folder}成功")
 
+        #恢复图层属性
 
-        # 保存后 将字体大小恢复修改前的状态
-        restore_text_layer_font_size(self.doc, text_size_cache)
-        #保存后  将图层可见性恢复修改前的状态
-        restore_layer_visible(self.doc, self.layer_outermost_set_name,layer_dict)
+
+        filtered_list = []
+        for item in data_cache:
+            if '字体大小' in item or 'visible' in item:
+                filtered_list.append(item)
+        layer_changer(self.ps_session, filtered_list)
 
 
 
 if __name__ == '__main__':
-    ps = Photoshop(psd_name='test.psd', export_folder='测试导出')
-
-
-    textdict = {"test1": "修改test1", "test2":["修改test2", 123],\
-                 "组2":{"test3":"修改test3","test4":["修改test4", 38]}}
-    textdict = {"test1": "修改test1", "test2":["修改test2", 123],}
-
-
-    layerdict = {"图片1":True,"组1":{"图片1":True,"图片2": False}}
+    start_time = time.time()
+    ps = Photoshop(psd_name='test', export_folder='测试导出')
 
 
 
-    ps.core(export_name='test',
-            text_dict = textdict,
-            layer_dict = layerdict,
-    )
+    test_dict = {
+            "test":[
+                {
+                    "图层路径":["第一层","第二层","文本2"],
+                    "visible":True,
+                    "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    "字体大小":35,
+                    "字体颜色":"#00A9FF",
+                }
+            ],
+            "test2":[
+                {
+                    "图层路径":["文本2"],
+                    "visible":True,
+                    "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    "字体大小":35,
+                    "字体颜色":"#00A9FF",
+                },
+                {
+                    "图层路径":["文本2"],
+                    "visible":True,
+                    "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    "字体大小":35,
+                    "字体颜色":"#00A9FF",
+                },
+                ]
+    }
 
-    # ps.test()
+    for key, value in test_dict.items():
+        ps.core(key, value)
+    print(f"总共耗时{time.time()-start_time}秒")
