@@ -58,6 +58,7 @@ class LoadData:
             layer_lst = []
             for header in dct.keys():
                 if dct[header] is not None:
+                    print(str(dct[header]).split("丨"))
                     #创建一个每个图层的字典
                     layer_dict = {}
                     # 匹配标题属性
@@ -67,13 +68,17 @@ class LoadData:
                             layer_dict["图层路径"] = [layer_name] \
                                                     if layer_set == "" else \
                                                     [layer_set,layer_name]
-                            match dct[header].split("丨"):
+                            match str(dct[header]).split("丨"):
                                 case str(text),str(font_size),str(font_color):
                                     layer_dict["文本内容"] = text
                                     layer_dict["字体大小"] = float(font_size)
                                     layer_dict["字体颜色"] = font_color
+                                case str(text),str(font_size):
+                                    layer_dict["文本内容"] = text
+                                    layer_dict["字体大小"] = float(font_size)
                                 case _:
                                     layer_dict["文本内容"] = dct[header]
+
                         # 匹配表头中修改可显性图层属性
                         case "可显性",str(layer_set_1),str(layer_set_2):
                             if layer_set_1 == "":
