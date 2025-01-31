@@ -9,7 +9,7 @@ from src.ps_layer_changer import layer_changer
 
 class Photoshop:
     """Photoshop 类"""
-    def __init__(self,psd_file_path:str =None,psd_name:str="test",\
+    def __init__(self,psd_file_path:str ="./psd",psd_name:str="test",\
                  export_folder ="测试导出文件夹",file_format="png",suffix = ""):
         """
         初始化Photoshop类

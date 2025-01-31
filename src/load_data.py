@@ -31,7 +31,7 @@ class LoadData:
                         self.sheet.range("psd_name").value,\
                         self.sheet.range("export_folder").value,\
                         self.sheet.range("file_format").value,\
-                        self.sheet.range("suffix").value,]
+                        self.sheet.range("suffix").value if self.sheet.range("suffix").value else "",]
         except ValueError as e:
             print(f"无法读取到表格中的配置信息,将使用默认配置\n{e}")
             settings = [None,"导出图片","png",""]
