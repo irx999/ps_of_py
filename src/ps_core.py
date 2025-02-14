@@ -3,13 +3,14 @@
 
 import os
 import time
+from tkinter import N
 from photoshop import Session
 
 from src.ps_layer_changer import layer_changer
 
 class Photoshop:
     """Photoshop 类"""
-    def __init__(self,psd_file_path:str ="./psd",psd_name:str="test",\
+    def __init__(self,psd_file_path:str =None,psd_name:str="test",\
                  export_folder ="测试导出文件夹",file_format="png",suffix = ""):
         """
         初始化Photoshop类
@@ -20,7 +21,7 @@ class Photoshop:
         :param suffix: 导出文件名后缀
         """
 
-        file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","")
+        file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","") + "/psd"
         self.psd_name = psd_name
         self.export_folder = f"{file_path}/{export_folder}"
         self.file_format = file_format

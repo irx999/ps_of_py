@@ -27,7 +27,11 @@ class LoadData:
     def read_settings(self):
         """ This function reads the export settings """
         try:
-            settings = [self.sheet.range("psd_file_path").value,\
+            psd_file_path = self.sheet.range("psd_file_path").value
+        except ValueError:
+            psd_file_path = None
+        try:
+            settings = [psd_file_path,\
                         self.sheet.range("psd_name").value,\
                         self.sheet.range("export_folder").value,\
                         self.sheet.range("file_format").value,\
@@ -129,5 +133,5 @@ class LoadData:
 
 if __name__ == '__main__':
     ld = LoadData()
-    ans =ld.selected_skus()
+    ans =ld.read_settings()
     print(ans)

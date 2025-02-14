@@ -14,7 +14,7 @@ def main():
     # 遍历整个字典
     if text_data:
         for export_name, v in text_data.items():
-            ps.core(export_name=export_name,
+            ps.core(export_name=str(export_name).replace(".0",""),
                 input_data = v
             )
 
