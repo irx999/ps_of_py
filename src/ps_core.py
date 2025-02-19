@@ -21,7 +21,7 @@ class Photoshop:
         :param suffix: 导出文件名后缀
         """
 
-        file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","") + "/psd"
+        file_path = f"{os.path.split(os.path.abspath(__file__ ))[0]}".replace("src","")
         self.psd_name = psd_name
         self.export_folder = f"{file_path}/{export_folder}"
         self.file_format = file_format
@@ -31,7 +31,7 @@ class Photoshop:
             os.makedirs(self.export_folder)
             print(f"创建文件夹{self.export_folder}成功")
         if psd_file_path is None:
-            psd_file_path = file_path
+            psd_file_path = file_path + "/psd"
             print(f"未传入psd文件路径，使用默认路径{psd_file_path}")
         #创建psd会话
         with Session(file_path=f"{psd_file_path}/{psd_name}.psd", action="open") as ps_session:
