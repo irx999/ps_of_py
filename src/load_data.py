@@ -27,15 +27,13 @@ class LoadData:
     def read_settings(self):
         """ This function reads the export settings """
         try:
-            psd_file_path = self.sheet.range("psd_file_path").value
-        except ValueError:
-            psd_file_path = None
-        try:
-            settings = [psd_file_path,\
-                        self.sheet.range("psd_name").value,\
-                        self.sheet.range("export_folder").value,\
-                        self.sheet.range("file_format").value,\
-                        self.sheet.range("suffix").value if self.sheet.range("suffix").value else "",]
+            settings = [
+                        self.sheet.range("psd_name").value,
+                        self.sheet.range("psd_file_path").value,
+                        self.sheet.range("export_folder").value,
+                        self.sheet.range("file_format").value,
+                        self.sheet.range("suffix").value,
+            ]
         except ValueError as e:
             print(f"无法读取到表格中的配置信息,将使用默认配置\n{e}")
             settings = [None,"导出图片","png",""]

@@ -30,8 +30,23 @@ def rgb_to_hex(r,g,b):
 def layer_changer(ps_session, input_data_list:list)->list:
     """ 
     :param ps_doc: 实例化后的ps对象
-    :param input_data: 传输的数据
-    {图层路径:list,可显性:bool,修改内容:str,字体大小:float,字体颜色:"hex mode"}
+    :param input_data_list: 传输的数据
+    [   
+        {
+            图层路径:list,
+            可显性:bool,
+            修改内容:str,
+            字体大小:float,
+            字体颜色:"#00A9FF"
+        },
+        {
+            图层路径:["第一层","第二层","文本2"],,
+            可显性:bool,
+            修改内容:str,
+            字体大小:float,
+            字体颜色:"#00A9FF"
+        },
+    ...]
     :return: 修改该图层之前的属性,
     """
     data_cache_list = []
