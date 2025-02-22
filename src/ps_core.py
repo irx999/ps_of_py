@@ -28,7 +28,7 @@ class Photoshop:
         self.psd_file_path = self.psd_file_path_set(psd_file_path)
         self.export_folder = self.export_folder_set(export_folder)
         self.file_format = file_format
-        self.suffix = suffix
+        self.suffix = suffix if suffix is not None else ""
         #检测传入的文件夹是否存在
 
         with Session(file_path=self.psd_file_path, action="open") as ps_session:
