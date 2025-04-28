@@ -116,25 +116,30 @@ class LoadData:
             ans_dct[dct["导出文件名"]] = layer_lst
         return ans_dct
 
-    def selected_skus(self):
+    def selected_skus(self) -> list:
         """This function returns the selected SKUs"""
 
         load_data = self.filter_data(self.read_range())
-
+        ans = []
         # 如果没有选择SKU, 则返回None
         if self.selectedranges:
             if isinstance(self.selectedranges, tuple):
                 sku_list = [i[0] for i in self.selectedranges if i is not None]
             else:
                 sku_list = [self.selectedranges]
-            return {
-                str(k).replace(".0", ""): v
-                for k, v in load_data.items()
-                if k in sku_list
-            }
+            for k, v in load_data.items():
+                if k in sku_list:
+                    ans.append({"任务名": str(k).replace(".0", ""), "内容": v})
 
+            return ans
         else:
             return None
+
+            #         return {
+            #     str(k).replace(".0", ""): v
+            #     for k, v in load_data.items()
+            #     if k in sku_list
+            # }
 
 
 if __name__ == "__main__":
