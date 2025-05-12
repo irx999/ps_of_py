@@ -1,7 +1,14 @@
 """主启动函数"""
 
+import os
+import sys
+
 from src.load_data import LoadData
 from src.ps_core import Photoshop
+
+main__working_dir = os.path.dirname(__file__)
+sys.path.append(main__working_dir)
+os.chdir(main__working_dir)
 
 
 def main():
