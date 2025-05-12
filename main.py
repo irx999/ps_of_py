@@ -1,22 +1,21 @@
 """主启动函数"""
 
-import win32api
-
 from src.load_data import LoadData
 from src.ps_core import Photoshop
 
 
 def main():
     """主启动函数"""
-    try:
-        lodadata = LoadData()
-        ps = Photoshop(*lodadata.settings)
-        # 遍历整个字典
-        for export_name, input_data in lodadata.selected_skus().items():
-            ps.core(export_name, input_data)
-    except Exception as e:
-        print(e)
-        win32api.MessageBox(0, str(e), "错误")
+    # try:
+    lodadata = LoadData()
+    ps = Photoshop(*lodadata.settings)
+    # 遍历整个字典
+    for task in lodadata.selected_skus():
+        print(task["内容"])
+        ps.core(task["任务名"], task["内容"])
+    # except Exception as e:
+    # print(e)
+    # win32api.MessageBox(0, str(e), "错误")
 
 
 def test():
@@ -44,5 +43,5 @@ def test2():
 
 
 if __name__ == "__main__":
-    test2()
+    main()
     pass

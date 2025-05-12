@@ -257,7 +257,7 @@ class Photoshop:
                     layer_name = layer_name.layerSets.getByName(layer_item)
 
             # 等待修改的图层集
-            # print(data_cache_list)
+            print(input_data, "123")
             # 开始修改图层属性
             for layer_name in change_layer_list:
                 if "visible" in input_data:
@@ -276,8 +276,8 @@ class Photoshop:
                     )
                     layer_name.textItem.color = self.hex_to_rgb(input_data["字体颜色"])
 
-            # 返回修改之前的属性
-            data_cache_list.append(data_cache)
+                # 返回修改之前的属性
+                data_cache_list.append(data_cache)
         return data_cache_list
 
 

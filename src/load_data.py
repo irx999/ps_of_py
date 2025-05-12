@@ -89,10 +89,10 @@ class LoadData:
 
                         # 匹配表头中修改可显性图层属性
                         case "可显性", str(layer_set_1), str(layer_set_2):
-                            if layer_set_1 == "":
-                                layer_dict["图层路径"] = [layer_set_2]
+                            if layer_set_1 == "" and layer_set_2 == "":
+                                layer_dict["图层路径"] = []
                             # 这里如果两个图层组需要操作两次的话, 就会在表格中重复, excel 会自动多一个复制处理
-                            if layer_set_2 == "" or layer_set_2 in [
+                            elif layer_set_2 == "" or layer_set_2 in [
                                 str(i) for i in range(1, 11)
                             ]:
                                 layer_dict["图层路径"] = [layer_set_1]
