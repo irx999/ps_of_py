@@ -92,12 +92,64 @@ class Photoshop:
     def open_os(self):
         pass
 
-    def task_run(self, task: list[dict[str, dict]]):
+    def run_task2(self, task: list[dict[str, dict]]):
+        # 记录初始状态的缓存（仅字体大小和可见性）
+        # initial_cache = self.layer_changer([])  # 获取初始状态（不修改任何属性）
+        # initial_cache = [
+        #     item for item in initial_cache if "字体大小" in item or "visible" in item
+        # ]
+        task = task
         for index in range(len(task)):
-            data_cache = self.layer_changer(task[index].values())
-            self.ps_saveas(task[index].keys())
+            # print(task)
+            task_content = task[index]["内容"]
+            task_name = task[index]["任务名"]
 
-            self.layer_changer(data_cache)
+            if index == 0:
+                # 第一个任务：修改属性 → 保存 → 生成缓存 → 传递给下一个任务
+                data_cache = self.layer_changer(task_content)
+                self.ps_saveas(task_name)
+                task[index]["缓存"] = data_cache  # 传递缓存
+
+                # 条件恢复：如果下一个任务不涉及字体大小/visible，则恢复
+                next_task = task[index + 1]["内容"]
+                if not any(
+                    key in input_data
+                    for input_data in next_task
+                    for key in ("字体大小", "visible")
+                ):
+                    self.layer_changer(next_task)
+
+            # 最后一个任务：读取上一个缓存 → 修改 → 保存 → 恢复初始状态
+            elif index == len(task) - 1:
+                prev_cache = task[index - 1].get("缓存", [])
+                true_conten = [i for i in task_content if i not in prev_cache]
+                print(f"{index}上一个缓存---->{prev_cache}")
+                print(f"{index}筛选后的任务---->{true_conten}")
+                data_cache = self.layer_changer(true_conten)
+                self.ps_saveas(task_name)
+                filtered_cache = [
+                    item
+                    for item in task_content
+                    if "字体大小" in item or "visible" in item
+                ]
+                self.layer_changer(filtered_cache)
+
+            else:
+                # 中间任务：读取上一个缓存 → 修改 → 生成新缓存
+
+                # 读取上一个缓存
+                prev_cache = task[index - 1].get("缓存", [])
+                true_conten = [i for i in task_content if i not in prev_cache]
+                print(f"{index}上一个缓存---->{prev_cache}")
+                print(f"{index}筛选后的任务---->{true_conten}")
+                data_cache = self.layer_changer(true_conten)
+                self.ps_saveas(task_name)
+                filtered_cache = [
+                    item
+                    for item in data_cache
+                    if "字体大小" in item or "visible" in item
+                ]
+                task[index]["缓存"] = filtered_cache  # 传递新缓存
 
     def core(self, export_name: str, input_data: dict) -> None:
         """
@@ -205,7 +257,7 @@ class Photoshop:
                     layer_name = layer_name.layerSets.getByName(layer_item)
 
             # 等待修改的图层集
-
+            print(input_data, "123")
             # 开始修改图层属性
             for layer_name in change_layer_list:
                 if "visible" in input_data:
@@ -224,8 +276,8 @@ class Photoshop:
                     )
                     layer_name.textItem.color = self.hex_to_rgb(input_data["字体颜色"])
 
-            # 返回修改之前的属性
-            data_cache_list.append(data_cache)
+                # 返回修改之前的属性
+                data_cache_list.append(data_cache)
         return data_cache_list
 
 
