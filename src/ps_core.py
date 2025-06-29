@@ -177,6 +177,8 @@ class Photoshop:
             print(f"正在恢复图层 {需要恢复的} 到初始状态")
             try:
                 self.change_layer_state(需要恢复的, initial_state)
+
+                del self.layer_initial_state[需要恢复的]
             except Exception as e:
                 print(f"恢复图层 {需要恢复的} 失败: {e}")
 
