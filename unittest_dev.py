@@ -11,7 +11,7 @@ class TestDevModule(unittest.TestCase):
         # os.removedirs("./test_export")
         self.start_time = time.time()
         self.ps = Photoshop(
-            psd_name="测试用例 - 副本",
+            psd_name="测试用例",
             export_folder="./test_export",
         )
         self.error_list = []
@@ -69,17 +69,20 @@ class TestDevModule(unittest.TestCase):
 
         return dict_for_test
 
-    # def test_change(self):
-    #     for export_name, input_data in self.dict_for_test().items():
-    #         start_time = time.time()
-    #         self.ps.core(export_name, input_data)
-    #         pprint(f"导出{export_name} 耗时: {time.time() - start_time:.4f} 秒")
+    def test_change(self):
+        for export_name, input_data in self.dict_for_test().items():
+            start_time = time.time()
+            self.ps.core(export_name, input_data)
+            pprint(f"导出{export_name} 耗时: {time.time() - start_time:.4f} 秒")
 
-    #     self.ps.restore_all_layers_to_initial()
-    #     pprint(self.error_list)
+        self.ps.restore_all_layers_to_initial()
+        pprint(self.error_list)
 
     def test_save_initial_layer_state(self):
         self.ps.psd_name = "测试用例 - 副本"
+        print(self.ps.psd_name)
+        self.ps.init()
+        print(self.ps)
         lodadata = LoadData()
         for task in lodadata.selected_skus():
             print(task["内容"])

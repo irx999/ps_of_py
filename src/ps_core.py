@@ -16,7 +16,7 @@ class Photoshop:
     def __init__(
         self,
         psd_name: str,
-        psd_file_path: str = None,
+        psd__dir_path: str = None,
         export_folder: str = None,
         file_format: str = "png",
     ):
@@ -28,10 +28,14 @@ class Photoshop:
         :param file_format: 导出文件格式，默认为png
         """
         self.psd_name = psd_name
-        self.psd_file_path = self.psd_file_path_set(psd_file_path)
+        self.psd__dir_path = psd__dir_path
         self.export_folder = self.export_folder_set(export_folder)
         self.file_format = file_format
 
+        self.init()
+
+    def init(self):
+        self.psd_file_path = self.psd_file_path_set()
         with Session(
             file_path=self.psd_file_path,
             action="open",
@@ -40,12 +44,8 @@ class Photoshop:
             self.ps_session = ps_session
             self.doc = ps_session.active_document
 
-        self.saveoptions = self.saveoptions_set(file_format)
-
-        self.error_list = []
-
-        self.layer_history = {}  # 图层当前状态
-        self.layer_export_history = {}  # 每个导出任务中图层是否被修改过
+        self.saveoptions = self.saveoptions_set(self.file_format)
+        self.layername_list = {}
 
         self.layer_initial_state = {}  # 图层初始状态
         self.layer_current_state = {}  # 图层当前状态
@@ -74,12 +74,14 @@ class Photoshop:
         """
         return str
 
-    def psd_file_path_set(self, psd_file_path: str = None) -> str:
+    def psd_file_path_set(self) -> str:
         """返回psd文件路径"""
-        if psd_file_path is None:
+
+        psd__dir_path = self.psd__dir_path
+        if psd__dir_path is None:
             ans = f"{os.getcwd()}/psd/{self.psd_name}.psd"
         else:
-            ans = f"{psd_file_path}/{self.psd_name}.psd"
+            ans = f"{psd__dir_path}/{self.psd_name}.psd"
         if not os.path.isfile(ans) or os.path.isdir(ans[:-1] + "b"):
             raise FileNotFoundError("psd或psb文件均不存在")
         return ans
@@ -205,45 +207,50 @@ class Photoshop:
 
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
-        layer_path = layername.split("|")
-        change_layer_list = []
 
-        # 根路径
-        current_layer = self.ps_session.active_document
-
-        for layer_item in layer_path[:-1]:
-            try:
-                current_layer = current_layer.layerSets.getByName(layer_item)
-            except Exception:
-                error_msg = f"未找到图层集 '{layer_item}' 在路径 {layer_path}"
-                self.error_list.append(error_msg)
-                logger.info(error_msg)
-                break
+        if layername in self.layername_list:
+            return self.layername_list[layername]
         else:
-            final_name = layer_path[-1]
-            target_layer = None
+            layer_path = layername.split("|")
+            change_layer_list = []
 
-            if final_name in [ls.name for ls in current_layer.layerSets]:
-                target_layer = current_layer.layerSets.getByName(final_name)
-            elif final_name in [al.name for al in current_layer.artLayers]:
-                target_layer = current_layer.artLayers.getByName(final_name)
+            # 根路径
+            current_layer = self.ps_session.active_document
 
-            if target_layer:
-                change_layer_list.append(target_layer)
+            for layer_item in layer_path[:-1]:
+                try:
+                    current_layer = current_layer.layerSets.getByName(layer_item)
+                except Exception:
+                    error_msg = f"未找到图层集 '{layer_item}' 在路径 {layer_path}"
+                    logger.info(error_msg)
+                    break
             else:
-                error_msg = f"未找到图层 '{final_name}' 在路径 {layer_path}"
-                self.error_list.append(error_msg)
-                logger.info(error_msg)
+                final_name = layer_path[-1]
+                target_layer = None
 
-            copy_name = final_name + " 拷贝"
-            if copy_name in [ls.name for ls in current_layer.layerSets]:
-                change_layer_list.append(current_layer.layerSets.getByName(copy_name))
-            elif copy_name in [al.name for al in current_layer.artLayers]:
-                change_layer_list.append(current_layer.artLayers.getByName(copy_name))
+                if final_name in [ls.name for ls in current_layer.layerSets]:
+                    target_layer = current_layer.layerSets.getByName(final_name)
+                elif final_name in [al.name for al in current_layer.artLayers]:
+                    target_layer = current_layer.artLayers.getByName(final_name)
 
-        # logger.info(f"已获取到以下图层: {[layer.name for layer in change_layer_list]}")
+                if target_layer:
+                    change_layer_list.append(target_layer)
+                else:
+                    error_msg = f"未找到图层 '{final_name}' 在路径 {layer_path}"
+                    logger.info(error_msg)
 
-        return change_layer_list
+                copy_name = final_name + " 拷贝"
+                if copy_name in [ls.name for ls in current_layer.layerSets]:
+                    change_layer_list.append(
+                        current_layer.layerSets.getByName(copy_name)
+                    )
+                elif copy_name in [al.name for al in current_layer.artLayers]:
+                    change_layer_list.append(
+                        current_layer.artLayers.getByName(copy_name)
+                    )
+
+            self.layername_list[layername] = change_layer_list
+            return change_layer_list
 
     @timer()
     def restore_all_layers_to_initial(self):
