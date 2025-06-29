@@ -27,7 +27,7 @@ class TestDevModule(unittest.TestCase):
     def dict_for_test(self):
         dict_for_test = {
             "No1": {
-                "标题|标题2": {
+                "标题/标题2": {
                     "visible": True,
                     "textItem": {
                         "文本内容": "标题第一次修改",
@@ -40,7 +40,7 @@ class TestDevModule(unittest.TestCase):
                 },
             },
             "No2": {
-                "标题|标题2": {
+                "标题/标题2": {
                     "visible": True,
                     "textItem": {
                         "文本内容": "标题第一次修改",
@@ -53,7 +53,7 @@ class TestDevModule(unittest.TestCase):
                 },
             },
             "No3": {
-                "标题|标题2": {
+                "标题/标题2": {
                     "visible": True,
                     "textItem": {
                         "文本内容": "标题第二次修改",

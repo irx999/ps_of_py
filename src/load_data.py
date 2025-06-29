@@ -117,7 +117,7 @@ class LoadData:
                     if layer_dict:
                         # layer_dict["图层路径"] = "|".join(layer_dict["图层路径"])
 
-                        图层路径 = "|".join(layer_dict["图层路径"])
+                        图层路径 = "/".join(layer_dict["图层路径"])
                         del layer_dict["图层路径"]
                         layer_lst[图层路径] = layer_dict
             ans_dct[dct["导出文件名"]] = layer_lst

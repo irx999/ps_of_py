@@ -152,12 +152,10 @@ class Photoshop:
             )
             return False
 
-    # def core()
     @timer()
     def core(self, export_name: str, input_data: dict):
-        当前所有初始化的 = set(self.layer_current_state.keys())
-
         # 当前已修改状态  但是 不需要修改的
+        当前所有初始化的 = set(self.layer_current_state.keys())
 
         for 需要恢复的 in 当前所有初始化的 - input_data.keys():
             initial_state = self.layer_initial_state.get(需要恢复的, {})
@@ -173,20 +171,19 @@ class Photoshop:
         for layer_name, layer_info in input_data.items():
             # 1. 第一次遇到该图层时记录初始状态
             if layer_name not in self.layer_initial_state:
+                # 有visible 属性直接记录
                 if layer_info.get("visible", False):
                     self.save_initial_layer_state(layer_name, layer_info)
-
-                elif layer_info.get("textItem", False):
+                # 没有的话需要 判断是否有字体大小 或者 字体颜色
+                elif layer_info.get("textItem", False) and any(
+                    layer_info["textItem"].get(key, False)
+                    for key in ["字体大小", "字体颜色"]
+                ):
                     if layer_info["textItem"].get("字体大小", False) or layer_info[
                         "textItem"
                     ].get("字体颜色", False):
                         self.save_initial_layer_state(layer_name, layer_info)
 
-                # 同时记录了最开始的状态和修改后的状态
-
-                # self.save_initial_layer_state(layer_name, layer_info)
-
-            # 2. 获取当前图层状态
             current_state = self.layer_current_state.get(layer_name, {})
 
             # 3. 判断是否需要真正修改
@@ -211,7 +208,7 @@ class Photoshop:
         if layername in self.layername_list:
             return self.layername_list[layername]
         else:
-            layer_path = layername.split("|")
+            layer_path = layername.split("/")
             change_layer_list = []
 
             # 根路径
@@ -252,7 +249,6 @@ class Photoshop:
             self.layername_list[layername] = change_layer_list
             return change_layer_list
 
-    @timer()
     def restore_all_layers_to_initial(self):
         """
         将所有图层恢复到初始状态
@@ -265,7 +261,6 @@ class Photoshop:
         self.layer_current_state.clear()
         logger.info("所有图层已恢复到初始状态...END")
 
-    @timer()
     def save_initial_layer_state(self, layername: str, layerinfo: dict):
         if layername not in self.layer_initial_state:
             try:
