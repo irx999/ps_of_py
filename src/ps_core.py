@@ -36,19 +36,19 @@ class Photoshop:
 
     def init(self):
         self.psd_file_path = self.psd_file_path_set()
-        with Session(
-            file_path=self.psd_file_path,
-            action="open",
-            # auto_close=True,
-        ) as ps_session:
+        with Session(file_path=self.psd_file_path, action="open") as ps_session:
             self.ps_session = ps_session
             self.doc = ps_session.active_document
 
-        self.saveoptions = self.saveoptions_set(self.file_format)
-        self.layername_list = {}
+            self.saveoptions = self.saveoptions_set(self.file_format)
+            self.layer_list: dict = {}  # 图层列表
 
-        self.layer_initial_state = {}  # 图层初始状态
-        self.layer_current_state = {}  # 图层当前状态
+            self.layer_initial_state: dict = {}  # 图层初始状态
+            self.layer_current_state: dict = {}  # 图层当前状态
+
+    def reconnect(self):
+        """重新建立 Photoshop 会话"""
+        self.init()
 
     def __str__(self) -> str:
         str = f"""
@@ -76,28 +76,29 @@ class Photoshop:
 
     def psd_file_path_set(self) -> str:
         """返回psd文件路径"""
+        base_path = self.psd__dir_path or os.path.join(os.getcwd(), "psd")
+        ans = os.path.join(base_path, f"{self.psd_name}.psd")
 
-        psd__dir_path = self.psd__dir_path
-        if psd__dir_path is None:
-            ans = f"{os.getcwd()}/psd/{self.psd_name}.psd"
-        else:
-            ans = f"{psd__dir_path}/{self.psd_name}.psd"
-        if not os.path.isfile(ans) or os.path.isdir(ans[:-1] + "b"):
+        if not os.path.isfile(ans) and not os.path.isdir(ans[:-1] + "b"):
             raise FileNotFoundError("psd或psb文件均不存在")
         return ans
 
     def export_folder_set(self, export_folder: str | None) -> str:
         """返回导出文件夹路径"""
         try:
-            if export_folder is None or export_folder == "":
+            if not export_folder or export_folder.strip() == "":
                 export_folder = "default_export_folder"
-            export_folder = f"{os.getcwd()}/{export_folder}"
-            if not os.path.exists(export_folder):
-                os.makedirs(export_folder)
-                logger.info(f"创建文件夹{export_folder}成功")
-            return export_folder
+
+            full_path = os.path.join(os.getcwd(), export_folder)
+
+            if not os.path.exists(full_path):
+                os.makedirs(full_path)
+                logger.info(f"创建文件夹 {full_path} 成功")
+
+            return full_path
+
         except Exception as e:
-            logger.info(f"创建文件夹{export_folder}失败: {e}")
+            logger.error(f"创建文件夹 {export_folder} 失败: {e}")
             return ""
 
     def saveoptions_set(self, file_format: str):
@@ -155,9 +156,9 @@ class Photoshop:
     @timer()
     def core(self, export_name: str, input_data: dict):
         # 当前已修改状态  但是 不需要修改的
-        当前所有初始化的 = set(self.layer_current_state.keys())
+        current_all_initialized = set(self.layer_current_state.keys())
 
-        for 需要恢复的 in 当前所有初始化的 - input_data.keys():
+        for 需要恢复的 in current_all_initialized - input_data.keys():
             initial_state = self.layer_initial_state.get(需要恢复的, {})
             if not initial_state:
                 continue
@@ -174,15 +175,10 @@ class Photoshop:
                 # 有visible 属性直接记录
                 if layer_info.get("visible", False):
                     self.save_initial_layer_state(layer_name, layer_info)
-                # 没有的话需要 判断是否有字体大小 或者 字体颜色
-                elif layer_info.get("textItem", False) and any(
-                    layer_info["textItem"].get(key, False)
-                    for key in ["字体大小", "字体颜色"]
+                elif "textItem" in layer_info and any(
+                    layer_info["textItem"].get(key) for key in ["size", "字体颜色"]
                 ):
-                    if layer_info["textItem"].get("字体大小", False) or layer_info[
-                        "textItem"
-                    ].get("字体颜色", False):
-                        self.save_initial_layer_state(layer_name, layer_info)
+                    self.save_initial_layer_state(layer_name, layer_info)
 
             current_state = self.layer_current_state.get(layer_name, {})
 
@@ -205,49 +201,45 @@ class Photoshop:
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
 
-        if layername in self.layername_list:
-            return self.layername_list[layername]
+        if layername in self.layer_list:
+            return self.layer_list[layername]
+
+        layer_path = layername.split("/")
+        change_layer_list = []
+
+        # 根路径
+        current_layer = self.ps_session.active_document
+
+        for layer_item in layer_path[:-1]:
+            try:
+                current_layer = current_layer.layerSets.getByName(layer_item)
+            except Exception:
+                logger.info(f"未找到图层集 '{layer_item}' 在路径 {layer_path}")
+                break
         else:
-            layer_path = layername.split("/")
-            change_layer_list = []
+            final_name = layer_path[-1]
+            target_layer = None
+            # 有限查找图层集
+            if final_name in [ls.name for ls in current_layer.layerSets]:
+                target_layer = current_layer.layerSets.getByName(final_name)
 
-            # 根路径
-            current_layer = self.ps_session.active_document
+            # 再有限查找图层
+            elif final_name in [al.name for al in current_layer.artLayers]:
+                target_layer = current_layer.artLayers.getByName(final_name)
 
-            for layer_item in layer_path[:-1]:
-                try:
-                    current_layer = current_layer.layerSets.getByName(layer_item)
-                except Exception:
-                    error_msg = f"未找到图层集 '{layer_item}' 在路径 {layer_path}"
-                    logger.info(error_msg)
-                    break
+            if target_layer:
+                change_layer_list.append(target_layer)
             else:
-                final_name = layer_path[-1]
-                target_layer = None
+                logger.info(f"未找到图层 '{final_name}' 在路径 {layer_path}")
 
-                if final_name in [ls.name for ls in current_layer.layerSets]:
-                    target_layer = current_layer.layerSets.getByName(final_name)
-                elif final_name in [al.name for al in current_layer.artLayers]:
-                    target_layer = current_layer.artLayers.getByName(final_name)
+            copy_name = final_name + " 拷贝"
+            if copy_name in [ls.name for ls in current_layer.layerSets]:
+                change_layer_list.append(current_layer.layerSets.getByName(copy_name))
+            elif copy_name in [al.name for al in current_layer.artLayers]:
+                change_layer_list.append(current_layer.artLayers.getByName(copy_name))
 
-                if target_layer:
-                    change_layer_list.append(target_layer)
-                else:
-                    error_msg = f"未找到图层 '{final_name}' 在路径 {layer_path}"
-                    logger.info(error_msg)
-
-                copy_name = final_name + " 拷贝"
-                if copy_name in [ls.name for ls in current_layer.layerSets]:
-                    change_layer_list.append(
-                        current_layer.layerSets.getByName(copy_name)
-                    )
-                elif copy_name in [al.name for al in current_layer.artLayers]:
-                    change_layer_list.append(
-                        current_layer.artLayers.getByName(copy_name)
-                    )
-
-            self.layername_list[layername] = change_layer_list
-            return change_layer_list
+        self.layer_list[layername] = change_layer_list
+        return change_layer_list
 
     def restore_all_layers_to_initial(self):
         """
@@ -260,6 +252,8 @@ class Photoshop:
         # 清空当前状态缓存
         self.layer_current_state.clear()
         logger.info("所有图层已恢复到初始状态...END")
+
+        # self.doc.close()
 
     def save_initial_layer_state(self, layername: str, layerinfo: dict):
         if layername not in self.layer_initial_state:
@@ -299,23 +293,14 @@ class Photoshop:
                     # 如果是文本图层，修改文本属性
                     if "textItem" in initial_state:
                         text_item_state = initial_state["textItem"]
-                        text_item = target_layer.textItem
-                        if "文本内容" in text_item_state:
-                            text_item.contents = text_item_state["文本内容"]
-                        if "字体大小" in text_item_state:
-                            text_item.size = text_item_state["字体大小"]
-                        if "字体颜色" in text_item_state:
-                            text_item.color = self.hex_to_rgb(
-                                text_item_state["字体颜色"]
-                            )
+                        for key, attr_name in text_item_state.items():
+                            setattr(target_layer, key, attr_name)
                     logger.info(f"图层 {layer_key} 已修改属性 {initial_state}")
-
-                    logger.info()
                 else:
                     logger.info(f"图层 {layer_key} 不存在，修改")
 
         except Exception as e:
-            logger.info(f"修改图层 {layer_key} 失败: {e}")
+            logger.error(f"修改图层 {layer_key} 失败: {e}")
 
 
 if __name__ == "__main__":
