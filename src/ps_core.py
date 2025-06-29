@@ -153,6 +153,21 @@ class Photoshop:
     # def core()
     @timer()
     def core(self, export_name: str, input_data: dict):
+        当前所有初始化的 = set(self.layer_current_state.keys())
+
+        # 当前已修改状态  但是 不需要修改的
+
+        for 需要恢复的 in 当前所有初始化的 - input_data.keys():
+            initial_state = self.layer_initial_state.get(需要恢复的, {})
+            if not initial_state:
+                continue
+            logger.info(f"正在恢复图层 {需要恢复的} 到初始状态")
+            try:
+                self.change_layer_state(需要恢复的, initial_state)
+
+                del self.layer_initial_state[需要恢复的]
+            except Exception as e:
+                logger.info(f"恢复图层 {需要恢复的} 失败: {e}")
         for layer_name, layer_info in input_data.items():
             # 1. 第一次遇到该图层时记录初始状态
             if layer_name not in self.layer_initial_state:
@@ -182,22 +197,6 @@ class Photoshop:
 
         # 4. 恢复未被修改的图层
         # 当前所有修改过的 = set(self.layer_initial_state.keys())
-
-        当前所有初始化的 = set(self.layer_current_state.keys())
-
-        # 当前已修改状态  但是 不需要修改的
-
-        for 需要恢复的 in 当前所有初始化的 - input_data.keys():
-            initial_state = self.layer_initial_state.get(需要恢复的, {})
-            if not initial_state:
-                continue
-            logger.info(f"正在恢复图层 {需要恢复的} 到初始状态")
-            try:
-                self.change_layer_state(需要恢复的, initial_state)
-
-                del self.layer_initial_state[需要恢复的]
-            except Exception as e:
-                logger.info(f"恢复图层 {需要恢复的} 失败: {e}")
 
         # 5. 导出文件
         self.ps_saveas(export_name)
