@@ -17,6 +17,7 @@ class TestDevModule(unittest.TestCase):
         self.error_list = []
 
     def tearDown(self):
+        self.ps.restore_all_layers_to_initial()
         end_time = time.time()
         pprint(f"{self._testMethodName} 耗时: {end_time - self.start_time:.4f} 秒")
 
@@ -82,7 +83,9 @@ class TestDevModule(unittest.TestCase):
         lodadata = LoadData()
         for task in lodadata.selected_skus():
             print(task["内容"])
+            start_time = time.time()
             self.ps.core(task["任务名"], task["内容"])
+            pprint(f"导出{task['任务名']} 耗时: {time.time() - start_time:.4f} 秒")
 
 
 if __name__ == "__main__":
