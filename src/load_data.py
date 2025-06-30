@@ -1,6 +1,7 @@
 """This module contains functions to load and preprocess data"""
 
 from itertools import zip_longest
+from typing import Any
 
 import xlwings as xw
 
@@ -35,7 +36,7 @@ class LoadData:
     def read_settings(self):
         """This function reads the export settings"""
         try:
-            settings = [
+            settings: Any = [
                 self.sheet.range("psd_name").value,
                 self.sheet.range("psd_file_path").value,
                 self.sheet.range("export_folder").value,
@@ -62,7 +63,7 @@ class LoadData:
         ans_dct = {}
         for dct in input_data:
             # 创建一个所有图层的列表
-            layer_lst = []
+            layer_lst = {}
             for header in dct.keys():
                 if dct[header] is not None:
                     # 创建一个每个图层的字典
@@ -76,16 +77,18 @@ class LoadData:
                                 if layer_set == ""
                                 else [layer_set, layer_name]
                             )
+
+                            layer_dict["textItem"] = {}
                             match str(dct[header]).split("丨"):
                                 case str(text), str(font_size), str(font_color):
-                                    layer_dict["文本内容"] = text
-                                    layer_dict["字体大小"] = int(font_size)
-                                    layer_dict["字体颜色"] = font_color
+                                    layer_dict["textItem"]["文本内容"] = text
+                                    layer_dict["textItem"]["字体大小"] = int(font_size)
+                                    layer_dict["textItem"]["字体颜色"] = font_color
                                 case str(text), str(font_size):
-                                    layer_dict["文本内容"] = text
+                                    layer_dict["textItem"]["文本内容"] = text
                                     layer_dict["字体大小"] = int(font_size)
                                 case _:
-                                    layer_dict["文本内容"] = dct[header]
+                                    layer_dict["textItem"]["文本内容"] = dct[header]
 
                         # 匹配表头中修改可显性图层属性
                         case "可显性", str(layer_set_1), str(layer_set_2):
@@ -111,8 +114,13 @@ class LoadData:
                                 case _:
                                     layer_dict["图层路径"].append(dct[header])
                                     layer_dict["visible"] = True
+
                     if layer_dict:
-                        layer_lst.append(layer_dict)
+                        # layer_dict["图层路径"] = "|".join(layer_dict["图层路径"])
+
+                        图层路径 = "/".join(layer_dict["图层路径"])
+                        del layer_dict["图层路径"]
+                        layer_lst[图层路径] = layer_dict
             ans_dct[dct["导出文件名"]] = layer_lst
         return ans_dct
 
@@ -133,13 +141,7 @@ class LoadData:
 
             return ans
         else:
-            return None
-
-            #         return {
-            #     str(k).replace(".0", ""): v
-            #     for k, v in load_data.items()
-            #     if k in sku_list
-            # }
+            return []
 
 
 if __name__ == "__main__":

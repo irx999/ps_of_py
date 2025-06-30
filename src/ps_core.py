@@ -1,9 +1,13 @@
 """This is a python script for photosop"""
 
 import os
-import time
 
 from photoshop import Session
+
+from src.logger import Logger
+from src.timer import timer
+
+logger = Logger(__name__, log_name="core")
 
 
 class Photoshop:
@@ -12,10 +16,9 @@ class Photoshop:
     def __init__(
         self,
         psd_name: str,
-        psd_file_path: str = None,
+        psd__dir_path: str = None,
         export_folder: str = None,
         file_format: str = "png",
-        suffix: str = "",
     ):
         """
         初始化Photoshop类
@@ -23,150 +26,88 @@ class Photoshop:
         :param psd_name: psd文件名,默认test
         :param export_folder: 导出文件夹名, 是在默认工作目录下面创建,
         :param file_format: 导出文件格式，默认为png
-        :param suffix: 导出文件名后缀
         """
         self.psd_name = psd_name
-        self.psd_file_path = self.psd_file_path_set(psd_file_path)
+        self.psd__dir_path = psd__dir_path
         self.export_folder = self.export_folder_set(export_folder)
         self.file_format = file_format
-        self.suffix = suffix if suffix else ""
 
+        self.init()
+
+    def init(self):
+        self.psd_file_path = self.psd_file_path_set()
         with Session(file_path=self.psd_file_path, action="open") as ps_session:
-            doc = ps_session.active_document
-            print(f"打开{self.psd_file_path}成功")
-        self.ps_session = ps_session
-        self.doc = doc
-        # # 最外层图层集
-        self.layer_outermost_set_name = [
-            _layerSets.name for _layerSets in self.doc.layerSets
-        ]
-        self.saveoptions = self.ps_save_options(file_format)
+            self.ps_session = ps_session
+            self.doc = ps_session.active_document
 
-        # 设置导出选项
+            self.saveoptions = self.saveoptions_set(self.file_format)
+            self.layer_list: dict = {}  # 图层列表
 
-    def psd_file_path_set(self, psd_file_path: str = None) -> str:
+            self.layer_initial_state: dict = {}  # 图层初始状态
+            self.layer_current_state: dict = {}  # 图层当前状态
+
+    def reconnect(self):
+        """重新建立 Photoshop 会话"""
+        self.init()
+
+    def __str__(self) -> str:
+        str = f"""
+        当前执行的psd文件为：{self.ps_session.active_document.name}
+        
+        文件路径为：{self.psd_file_path}
+
+        当前psd尺寸为  {self.doc.width} * {self.doc.height}
+
+        当前psd的具有图层：{
+            [
+                _artLayers.name
+                for _artLayers in self.ps_session.active_document.artLayers
+            ]
+        }
+        当前psd的具有图层集：{
+            [
+                _layerSets.name
+                for _layerSets in self.ps_session.active_document.layerSets
+            ]
+        }
+
+        """
+        return str
+
+    def psd_file_path_set(self) -> str:
         """返回psd文件路径"""
-        if psd_file_path is None:
-            ans = f"{os.getcwd()}/psd/{self.psd_name}.psd"
-        else:
-            ans = f"{psd_file_path}/{self.psd_name}.psd"
-        if not os.path.isfile(ans):
-            ans = ans[:-1] + "b"
-            if not os.path.isfile(ans):
-                raise FileNotFoundError("psd或psb文件均不存在")
+        base_path = self.psd__dir_path or os.path.join(os.getcwd(), "psd")
+        ans = os.path.join(base_path, f"{self.psd_name}.psd")
+
+        if not os.path.isfile(ans) and not os.path.isdir(ans[:-1] + "b"):
+            raise FileNotFoundError("psd或psb文件均不存在")
         return ans
 
-    def export_folder_set(self, export_folder: str) -> str:
+    def export_folder_set(self, export_folder: str | None) -> str:
         """返回导出文件夹路径"""
-        if export_folder is None or export_folder == "":
-            export_folder = "default_export_folder"
-        export_folder = f"{os.getcwd()}/{export_folder}"
-        if not os.path.exists(export_folder):
-            os.makedirs(export_folder)
-            print(f"创建文件夹{export_folder}成功")
-        return export_folder
+        try:
+            if not export_folder or export_folder.strip() == "":
+                export_folder = "default_export_folder"
 
-    def ps_save_options(self, file_format: str):
+            full_path = os.path.join(os.getcwd(), export_folder)
+
+            if not os.path.exists(full_path):
+                os.makedirs(full_path)
+                logger.info(f"创建文件夹 {full_path} 成功")
+
+            return full_path
+
+        except Exception as e:
+            logger.error(f"创建文件夹 {export_folder} 失败: {e}")
+            return ""
+
+    def saveoptions_set(self, file_format: str):
         """设置psd导出选项"""
         match file_format:
             case "jpg" | "jpeg":
                 return self.ps_session.JPEGSaveOptions()
             case _:
                 return self.ps_session.PNGSaveOptions()
-
-    def ps_saveas(self, export_name: str) -> bool:
-        try:
-            self.doc.saveAs(
-                f"{self.export_folder}/{export_name}{self.suffix}.{self.file_format}",
-                self.saveoptions,
-                asCopy=True,
-            )
-            print(f"导出{export_name}.{self.file_format}到{self.export_folder}成功")
-            return True
-        except Exception as e:
-            print(
-                f"导出{export_name}.{self.file_format}到{self.export_folder}失败\n {e}"
-            )
-            return False
-
-    def open_os(self):
-        pass
-
-    def run_task2(self, task: list[dict[str, dict]]):
-        # 记录初始状态的缓存（仅字体大小和可见性）
-        # initial_cache = self.layer_changer([])  # 获取初始状态（不修改任何属性）
-        # initial_cache = [
-        #     item for item in initial_cache if "字体大小" in item or "visible" in item
-        # ]
-        task = task
-        for index in range(len(task)):
-            # print(task)
-            task_content = task[index]["内容"]
-            task_name = task[index]["任务名"]
-
-            if index == 0:
-                # 第一个任务：修改属性 → 保存 → 生成缓存 → 传递给下一个任务
-                data_cache = self.layer_changer(task_content)
-                self.ps_saveas(task_name)
-                task[index]["缓存"] = data_cache  # 传递缓存
-
-                # 条件恢复：如果下一个任务不涉及字体大小/visible，则恢复
-                next_task = task[index + 1]["内容"]
-                if not any(
-                    key in input_data
-                    for input_data in next_task
-                    for key in ("字体大小", "visible")
-                ):
-                    self.layer_changer(next_task)
-
-            # 最后一个任务：读取上一个缓存 → 修改 → 保存 → 恢复初始状态
-            elif index == len(task) - 1:
-                prev_cache = task[index - 1].get("缓存", [])
-                true_conten = [i for i in task_content if i not in prev_cache]
-                print(f"{index}上一个缓存---->{prev_cache}")
-                print(f"{index}筛选后的任务---->{true_conten}")
-                data_cache = self.layer_changer(true_conten)
-                self.ps_saveas(task_name)
-                filtered_cache = [
-                    item
-                    for item in task_content
-                    if "字体大小" in item or "visible" in item
-                ]
-                self.layer_changer(filtered_cache)
-
-            else:
-                # 中间任务：读取上一个缓存 → 修改 → 生成新缓存
-
-                # 读取上一个缓存
-                prev_cache = task[index - 1].get("缓存", [])
-                true_conten = [i for i in task_content if i not in prev_cache]
-                print(f"{index}上一个缓存---->{prev_cache}")
-                print(f"{index}筛选后的任务---->{true_conten}")
-                data_cache = self.layer_changer(true_conten)
-                self.ps_saveas(task_name)
-                filtered_cache = [
-                    item
-                    for item in data_cache
-                    if "字体大小" in item or "visible" in item
-                ]
-                task[index]["缓存"] = filtered_cache  # 传递新缓存
-
-    def core(self, export_name: str, input_data: dict) -> None:
-        """
-        :param export_name: 导出文件名
-        :param input_data: 图层属性数据
-        :return: None
-        """
-        # 修改图层属性
-        data_cache = self.layer_changer(input_data)
-        # 保存图片
-        self.ps_saveas(export_name)
-        # 提取缓存数据
-        data_cache = [
-            item for item in data_cache if "字体大小" in item or "visible" in item
-        ]
-        # 恢复图层属性
-        self.layer_changer(data_cache)
 
     def rgb_to_hex(self, r, g, b):
         """
@@ -195,130 +136,172 @@ class Photoshop:
         text_color.rgb.blue = b
         return text_color
 
-    def layer_changer(self, input_data_list: list):
-        """
-        :param ps_doc: 实例化后的ps对象
-        :param input_data_list: 传输的数据
-        [
-            {
-                图层路径:list,
-                可显性:bool,
-                修改内容:str,
-                字体大小:float,
-                字体颜色:"#00A9FF"
-            },
-            {
-                图层路径:["第一层","第二层","文本2"],,
-                可显性:bool,
-                修改内容:str,
-                字体大小:float,
-                字体颜色:"#00A9FF"
-            },
-        ...]
-        :return: 修改该图层之前的属性,
-        """
-        data_cache_list = []
+    def ps_saveas(self, export_name: str) -> bool:
+        try:
+            self.doc.saveAs(
+                f"{self.export_folder}/{export_name}.{self.file_format}",
+                self.saveoptions,
+                asCopy=True,
+            )
+            logger.info(
+                f"导出{export_name}.{self.file_format}到{self.export_folder}成功"
+            )
+            return True
+        except Exception as e:
+            logger.info(
+                f"导出{export_name}.{self.file_format}到{self.export_folder}失败\n {e}"
+            )
+            return False
 
-        for input_data in input_data_list:
-            # 等待修改的图层集
-            change_layer_list = []
+    @timer()
+    def core(self, export_name: str, input_data: dict):
+        # 当前已修改状态  但是 不需要修改的
+        current_all_initialized = set(self.layer_current_state.keys())
 
-            data_cache = {"图层路径": input_data["图层路径"]}
-            # 先拿到需要修改的图层对象
-            layer_name = self.ps_session.active_document
-            for layer_item in input_data["图层路径"]:
-                # 如果是图层路径的最后一个
-                if layer_item == input_data["图层路径"][-1]:
-                    layer_item = str(layer_item)
-                    # 如果该名字是在组合中 他就是一个组合
-                    if layer_item in [name.name for name in layer_name.layerSets]:
-                        change_layer_list.append(
-                            layer_name.layerSets.getByName(layer_item)
-                        )
-                    # 反之就是一个图层了
-                    else:
-                        change_layer_list.append(
-                            layer_name.artLayers.getByName(layer_item)
-                        )
-                    # 这里会判断一个拷贝图层的属性是否需要修改
-                    if layer_item + " 拷贝" in [
-                        name.name for name in layer_name.layerSets
-                    ]:
-                        change_layer_list.append(
-                            layer_name.layerSets.getByName(layer_item + " 拷贝")
-                        )
-                    if layer_item + " 拷贝" in [
-                        name.name for name in layer_name.artLayers
-                    ]:
-                        change_layer_list.append(
-                            layer_name.artLayers.getByName(layer_item + " 拷贝")
-                        )
+        for 需要恢复的 in current_all_initialized - input_data.keys():
+            initial_state = self.layer_initial_state.get(需要恢复的, {})
+            if not initial_state:
+                continue
+            logger.info(f"正在恢复图层 {需要恢复的} 到初始状态")
+            try:
+                self.change_layer_state(需要恢复的, initial_state)
+
+                del self.layer_initial_state[需要恢复的]
+            except Exception as e:
+                logger.info(f"恢复图层 {需要恢复的} 失败: {e}")
+        for layer_name, layer_info in input_data.items():
+            # 1. 第一次遇到该图层时记录初始状态
+            if layer_name not in self.layer_initial_state:
+                # 有visible 属性直接记录
+                if layer_info.get("visible", False):
+                    self.save_initial_layer_state(layer_name, layer_info)
+                elif "textItem" in layer_info and any(
+                    layer_info["textItem"].get(key) for key in ["size", "字体颜色"]
+                ):
+                    self.save_initial_layer_state(layer_name, layer_info)
+
+            current_state = self.layer_current_state.get(layer_name, {})
+
+            # 3. 判断是否需要真正修改
+            if current_state != layer_info:
+                logger.info(f"图层 {layer_name} 需要修改")
+                self.change_layer_state(layer_name, layer_info)
+                self.layer_current_state[layer_name] = layer_info
+            else:
+                logger.info(f"图层 {layer_name} 状态一致，无需修改")
+
+        # 4. 恢复未被修改的图层
+        # 当前所有修改过的 = set(self.layer_initial_state.keys())
+
+        # 5. 导出文件
+        self.ps_saveas(export_name)
+
+        # 6. 清理任务记录
+
+    def get_layer_by_layername(self, layername: str):
+        """根据层名获取图层"""
+
+        if layername in self.layer_list:
+            return self.layer_list[layername]
+
+        layer_path = layername.split("/")
+        change_layer_list = []
+
+        # 根路径
+        current_layer = self.ps_session.active_document
+
+        for layer_item in layer_path[:-1]:
+            try:
+                current_layer = current_layer.layerSets.getByName(layer_item)
+            except Exception:
+                logger.info(f"未找到图层集 '{layer_item}' 在路径 {layer_path}")
+                break
+        else:
+            final_name = layer_path[-1]
+            target_layer = None
+            # 有限查找图层集
+            if final_name in [ls.name for ls in current_layer.layerSets]:
+                target_layer = current_layer.layerSets.getByName(final_name)
+
+            # 再有限查找图层
+            elif final_name in [al.name for al in current_layer.artLayers]:
+                target_layer = current_layer.artLayers.getByName(final_name)
+
+            if target_layer:
+                change_layer_list.append(target_layer)
+            else:
+                logger.info(f"未找到图层 '{final_name}' 在路径 {layer_path}")
+
+            copy_name = final_name + " 拷贝"
+            if copy_name in [ls.name for ls in current_layer.layerSets]:
+                change_layer_list.append(current_layer.layerSets.getByName(copy_name))
+            elif copy_name in [al.name for al in current_layer.artLayers]:
+                change_layer_list.append(current_layer.artLayers.getByName(copy_name))
+
+        self.layer_list[layername] = change_layer_list
+        return change_layer_list
+
+    def restore_all_layers_to_initial(self):
+        """
+        将所有图层恢复到初始状态
+        """
+        logger.info("开始恢复所有图层到初始状态...END")
+        for layer_key, initial_state in self.layer_initial_state.items():
+            self.change_layer_state(layer_key, initial_state)
+
+        # 清空当前状态缓存
+        self.layer_current_state.clear()
+        logger.info("所有图层已恢复到初始状态...END")
+
+        # self.doc.close()
+
+    def save_initial_layer_state(self, layername: str, layerinfo: dict):
+        if layername not in self.layer_initial_state:
+            try:
+                target_layers = self.get_layer_by_layername(layername)
+                for target_layer in target_layers:
+                    if target_layer:
+                        state = {}
+                        if "visible" in layerinfo:
+                            state["visible"] = target_layer.visible
+                        if "textItem" in layerinfo:
+                            state["textItem"] = {}
+                            text_item = target_layer.textItem
+                            state["textItem"]["文本内容"] = text_item.contents
+                            state["textItem"]["字体大小"] = text_item.size
+                            font_color = text_item.color.rgb
+                            state["textItem"]["字体颜色"] = self.rgb_to_hex(
+                                font_color.red, font_color.green, font_color.blue
+                            )
+
+                        # 同时保存初始状态 和 当前状态
+                        self.layer_initial_state[layername] = state.copy()
+                        self.layer_current_state[layername] = state.copy()
+
+                        logger.info(f"保存初始状态成功: {layername=}, {state=}")
+            except Exception as e:
+                logger.info(f"无法保存图层 {layername} 的初始状态: {e}")
+
+    @timer()
+    def change_layer_state(self, layer_key: str, initial_state: dict) -> None:
+        try:
+            for target_layer in self.get_layer_by_layername(layer_key):
+                if target_layer:
+                    # 修改可见性
+                    if "visible" in initial_state:
+                        target_layer.visible = initial_state["visible"]
+                    # 如果是文本图层，修改文本属性
+                    if "textItem" in initial_state:
+                        text_item_state = initial_state["textItem"]
+                        for key, attr_name in text_item_state.items():
+                            setattr(target_layer, key, attr_name)
+                    logger.info(f"图层 {layer_key} 已修改属性 {initial_state}")
                 else:
-                    layer_name = layer_name.layerSets.getByName(layer_item)
+                    logger.info(f"图层 {layer_key} 不存在，修改")
 
-            # 等待修改的图层集
-            print(input_data, "123")
-            # 开始修改图层属性
-            for layer_name in change_layer_list:
-                if "visible" in input_data:
-                    data_cache["visible"] = layer_name.visible
-                    layer_name.visible = input_data["visible"]
-                if "文本内容" in input_data:
-                    data_cache["文本内容"] = layer_name.textItem.contents
-                    layer_name.textItem.contents = str(input_data["文本内容"])
-                if "字体大小" in input_data:
-                    data_cache["字体大小"] = layer_name.textItem.size
-                    layer_name.textItem.size = input_data["字体大小"]
-                if "字体颜色" in input_data:
-                    font_color = layer_name.textItem.color.rgb
-                    data_cache["字体颜色"] = self.rgb_to_hex(
-                        font_color.red, font_color.green, font_color.blue
-                    )
-                    layer_name.textItem.color = self.hex_to_rgb(input_data["字体颜色"])
-
-                # 返回修改之前的属性
-                data_cache_list.append(data_cache)
-        return data_cache_list
+        except Exception as e:
+            logger.error(f"修改图层 {layer_key} 失败: {e}")
 
 
 if __name__ == "__main__":
-    start_time = time.time()
-    ps = Photoshop(
-        psd_file_path="",
-        psd_name="test",
-        export_folder="",
-        file_format="png",
-        suffix="",
-    )
-
-    test_dict = {
-        "test": [
-            {
-                "图层路径": ["第一层", "第二层", "文本2"],
-                "visible": True,
-                "文本内容": "修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小": 35,
-                "字体颜色": "#00A9FF",
-            }
-        ],
-        "test2": [
-            {
-                "图层路径": ["文本2"],
-                "visible": True,
-                "文本内容": "修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小": 35,
-                "字体颜色": "#00A9FF",
-            },
-            {
-                "图层路径": ["文本2"],
-                "visible": True,
-                "文本内容": "修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小": 35,
-                "字体颜色": "#00A9FF",
-            },
-        ],
-    }
-
-    for key, value in test_dict.items():
-        ps.core(key, value)
-    print(f"总共耗时{time.time() - start_time}秒")
+    pass

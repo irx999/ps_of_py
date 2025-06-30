@@ -1,0 +1,14 @@
+[project]
+name = "ps-of-py"
+version = "0.2.0"
+description = "This is a  Python  for Photoshop."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "photoshop-python-api>=0.24.1",
+]
+
+[dependency-groups]
+dev = [
+    "xlwings>=0.33.15",
+]
