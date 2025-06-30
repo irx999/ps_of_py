@@ -79,6 +79,11 @@ class TestDevModule(unittest.TestCase):
         self.ps.restore_all_layers_to_initial()
         self.ps.doc.close()
 
+        single_run_time = sum(self.ps.run_time_record_list) / len(
+            lodadata.selected_skus()
+        )
+        pprint(f"当前单张图片速度未{single_run_time:.2f}秒")
+
 
 if __name__ == "__main__":
     # Run the tests

@@ -1,6 +1,7 @@
 """This is a python script for photosop"""
 
 import os
+import time
 
 from photoshop import Session
 
@@ -45,6 +46,8 @@ class Photoshop:
 
             self.layer_initial_state: dict = {}  # 图层初始状态
             self.layer_current_state: dict = {}  # 图层当前状态
+
+            self.run_time_record_list = []
 
     def reconnect(self):
         """重新建立 Photoshop 会话"""
@@ -156,6 +159,7 @@ class Photoshop:
     @timer()
     def core(self, export_name: str, input_data: dict):
         """核心函数"""
+        start_time = time.time()
 
         # 1.找当已经 修改的记录中但是接下来的不需要修改 及 需要恢复的
         current_all_initialized = set(self.layer_current_state.keys())
@@ -197,6 +201,8 @@ class Photoshop:
 
         # 5. 导出文件
         self.ps_saveas(export_name)
+
+        self.run_time_record_list.append(time.time() - start_time)
 
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
@@ -282,7 +288,6 @@ class Photoshop:
             except Exception as e:
                 logger.info(f"无法保存图层 {layername} 的初始状态: {e}")
 
-    @timer()
     def change_layer_state(self, layer_key: str, initial_state: dict) -> None:
         try:
             for target_layer in self.get_layer_by_layername(layer_key):
