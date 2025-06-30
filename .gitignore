@@ -11,3 +11,7 @@ wheels/
 *.log
 .streamlit/config.yaml
 *test_export
+*.png
+*.jpg
+*.jpeg
+*~*

@@ -81,14 +81,14 @@ class LoadData:
                             layer_dict["textItem"] = {}
                             match str(dct[header]).split("丨"):
                                 case str(text), str(font_size), str(font_color):
-                                    layer_dict["textItem"]["文本内容"] = text
-                                    layer_dict["textItem"]["字体大小"] = int(font_size)
-                                    layer_dict["textItem"]["字体颜色"] = font_color
+                                    layer_dict["textItem"]["contents"] = text
+                                    layer_dict["textItem"]["size"] = int(font_size)
+                                    layer_dict["textItem"]["color"] = font_color
                                 case str(text), str(font_size):
-                                    layer_dict["textItem"]["文本内容"] = text
-                                    layer_dict["字体大小"] = int(font_size)
+                                    layer_dict["textItem"]["contents"] = text
+                                    layer_dict["size"] = int(font_size)
                                 case _:
-                                    layer_dict["textItem"]["文本内容"] = dct[header]
+                                    layer_dict["textItem"]["contents"] = dct[header]
 
                         # 匹配表头中修改可显性图层属性
                         case "可显性", str(layer_set_1), str(layer_set_2):

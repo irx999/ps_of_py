@@ -60,16 +60,17 @@ class TestDevModule(unittest.TestCase):
 
         return dict_for_test
 
-    # unittest.skip("")
+    @unittest.skip("")
     def test_change(self):
         for export_name, input_data in self.dict_for_test().items():
             self.ps.core(export_name, input_data)
         self.ps.restore_all_layers_to_initial()
         self.ps.doc.close()
 
-    @unittest.skip("")
+    # @unittest.skip("")
     def test_save_initial_layer_state(self):
-        self.ps.psd_name = "测试用例 - 副本"
+        self.ps.psd_name = "显卡参数新"
+        self.ps.psd__dir_path = r"E:\WORK\工作相关\psd"
         self.ps.reconnect()
         lodadata = LoadData()
         for task in lodadata.selected_skus():

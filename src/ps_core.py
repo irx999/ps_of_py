@@ -267,10 +267,10 @@ class Photoshop:
                         if "textItem" in layerinfo:
                             state["textItem"] = {}
                             text_item = target_layer.textItem
-                            state["textItem"]["文本内容"] = text_item.contents
-                            state["textItem"]["字体大小"] = text_item.size
+                            state["textItem"]["contents"] = text_item.contents
+                            state["textItem"]["size"] = text_item.size
                             font_color = text_item.color.rgb
-                            state["textItem"]["字体颜色"] = self.rgb_to_hex(
+                            state["textItem"]["color"] = self.rgb_to_hex(
                                 font_color.red, font_color.green, font_color.blue
                             )
 
@@ -294,7 +294,10 @@ class Photoshop:
                     if "textItem" in initial_state:
                         text_item_state = initial_state["textItem"]
                         for key, attr_name in text_item_state.items():
-                            setattr(target_layer, key, attr_name)
+                            if key == "color":
+                                target_layer.textItem.color = self.hex_to_rgb(attr_name)
+                                continue
+                            setattr(target_layer.textItem, key, attr_name)
                     logger.info(f"图层 {layer_key} 已修改属性 {initial_state}")
                 else:
                     logger.info(f"图层 {layer_key} 不存在，修改")

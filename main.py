@@ -22,6 +22,7 @@ def main():
     for task in lodadata.selected_skus():
         print(task["内容"])
         ps.core(task["任务名"] + suffix, task["内容"])
+    ps.restore_all_layers_to_initial()
 
 
 if __name__ == "__main__":
