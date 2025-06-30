@@ -15,14 +15,13 @@ def main():
     """主启动函数"""
     # try:
     lodadata = LoadData()
-    ps = Photoshop(*lodadata.settings)
+
+    ps_settings, suffix = lodadata.settings[:-1], lodadata.settings[-1]
+    ps = Photoshop(*ps_settings)
     # 遍历整个字典
     for task in lodadata.selected_skus():
         print(task["内容"])
-        ps.core(task["任务名"], task["内容"])
-    # except Exception as e:
-    # print(e)
-    # win32api.MessageBox(0, str(e), "错误")
+        ps.core(task["任务名"] + suffix, task["内容"])
 
 
 if __name__ == "__main__":

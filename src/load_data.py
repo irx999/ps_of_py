@@ -1,6 +1,7 @@
 """This module contains functions to load and preprocess data"""
 
 from itertools import zip_longest
+from typing import Any
 
 import xlwings as xw
 
@@ -35,7 +36,7 @@ class LoadData:
     def read_settings(self):
         """This function reads the export settings"""
         try:
-            settings = [
+            settings: Any = [
                 self.sheet.range("psd_name").value,
                 self.sheet.range("psd_file_path").value,
                 self.sheet.range("export_folder").value,
