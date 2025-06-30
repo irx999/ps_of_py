@@ -8,11 +8,10 @@
 ### ps.py
 创建实例
 ```python
+:param psd_name: psd文件名
 :param psd_file_path: psd文件路径,默认工作目录
-:param psd_name: psd文件名,默认test
-:param export_folder: 导出文件夹名, 是在默认工作目录下面创建,
+:param export_folder: 导出文件夹名, 默认未default_export_folder
 :param file_format: 导出文件格式，默认为png
-:param suffix: 导出文件名后缀
 ```
 
 
@@ -25,35 +24,46 @@
 input_data格式
 ```python
 test_dict = {
-        "测试导出图片1":[
-            {
-                "图层路径":["第一层","第二层","文本2"],
-                "visible":True,
-                "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小":35,
-                "字体颜色":"#00A9FF",
-            }
-        ],
-        "测试导出图片2":[
-            {
-                "图层路径":["文本2"],
-                "visible":True,
-                "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小":35,
-                "字体颜色":"#00A9FF",
+            "No1": {
+                "标题/标题2": {
+                    "visible": True,
+                    "textItem": {
+                        "contents": "标题第一次修改",
+                        "size": 35,
+                        "color": "#086D7A",
+                    },
+                },
+                "显卡/GV-N5060OC-8GL": {
+                    "visible": True,
+                },
             },
-            {
-                "图层路径":["文本2"],
-                "visible":True,
-                "文本内容":"修改为:ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                "字体大小":35,
-                "字体颜色":"#00A9FF",
+            "No2": {
+                "标题/标题2": {
+                    "visible": True,
+                    "textItem": {
+                        "contents": "标题第一次修改",
+                        "size": 35,
+                        "color": "#086D7A",
+                    },
+                },
+                "显卡/GV-N5060OC-8GL": {
+                    "visible": False,
+                },
             },
-            {
-                "图层路径":["第一层","第二层","文本2"],
-                "visible":True,            }
-            ]
-}
+            "No3": {
+                "标题/标题2": {
+                    "visible": True,
+                    "textItem": {
+                        "contents": "标题第二次修改",
+                        "size": 35,
+                        "color": "#C218C2",
+                    },
+                },
+                "显卡/GV-N5060GAMING OC-8GD": {
+                    "visible": True,
+                },
+            },
+        }
 ```
 
 ### load_data.py

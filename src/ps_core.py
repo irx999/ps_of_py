@@ -155,7 +155,9 @@ class Photoshop:
 
     @timer()
     def core(self, export_name: str, input_data: dict):
-        # 当前已修改状态  但是 不需要修改的
+        """核心函数"""
+
+        # 1.找当已经 修改的记录中但是接下来的不需要修改 及 需要恢复的
         current_all_initialized = set(self.layer_current_state.keys())
 
         for 需要恢复的 in current_all_initialized - input_data.keys():
@@ -169,14 +171,16 @@ class Photoshop:
                 del self.layer_initial_state[需要恢复的]
             except Exception as e:
                 logger.info(f"恢复图层 {需要恢复的} 失败: {e}")
+
+        # 2. 执行任务之前看是否修改的属性需要记录 修改前状态
         for layer_name, layer_info in input_data.items():
-            # 1. 第一次遇到该图层时记录初始状态
             if layer_name not in self.layer_initial_state:
                 # 有visible 属性直接记录
                 if layer_info.get("visible", False):
                     self.save_initial_layer_state(layer_name, layer_info)
+                # 有 文本属性  中的size 或者 color
                 elif "textItem" in layer_info and any(
-                    layer_info["textItem"].get(key) for key in ["size", "字体颜色"]
+                    layer_info["textItem"].get(key) for key in ["size", "color"]
                 ):
                     self.save_initial_layer_state(layer_name, layer_info)
 
@@ -185,18 +189,14 @@ class Photoshop:
             # 3. 判断是否需要真正修改
             if current_state != layer_info:
                 logger.info(f"图层 {layer_name} 需要修改")
+                # 4. 执行修改
                 self.change_layer_state(layer_name, layer_info)
                 self.layer_current_state[layer_name] = layer_info
             else:
                 logger.info(f"图层 {layer_name} 状态一致，无需修改")
 
-        # 4. 恢复未被修改的图层
-        # 当前所有修改过的 = set(self.layer_initial_state.keys())
-
         # 5. 导出文件
         self.ps_saveas(export_name)
-
-        # 6. 清理任务记录
 
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
