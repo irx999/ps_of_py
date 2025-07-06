@@ -86,7 +86,7 @@ class LoadData:
                                     layer_dict["textItem"]["color"] = font_color
                                 case str(text), str(font_size):
                                     layer_dict["textItem"]["contents"] = text
-                                    layer_dict["size"] = int(font_size)
+                                    layer_dict["textItem"]["size"] = int(font_size)
                                 case _:
                                     layer_dict["textItem"]["contents"] = dct[header]
 
