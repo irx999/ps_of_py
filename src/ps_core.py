@@ -8,7 +8,7 @@ from photoshop import Session
 from src.logger import Logger
 from src.timer import timer
 
-logger = Logger(__name__, log_name="core")
+logger = Logger(__name__, log_name="core", debug_mode=True)
 
 
 class Photoshop:

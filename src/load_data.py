@@ -22,7 +22,9 @@ class LoadData:
             # 读取表格中的数据
             self.table_values = self.table.data_body_range.value
             # 读取当前选择的单元格
-            self.selectedranges = self.sheet.api.Application.Selection.Value
+            self.selectedranges: str | list[str] = (
+                self.sheet.api.Application.Selection.Value
+            )
             # 读取表格中写入的导出配置信息
             self.settings = self.read_settings()
         except OSError as e:
@@ -124,11 +126,11 @@ class LoadData:
             ans_dct[dct["导出文件名"]] = layer_lst
         return ans_dct
 
-    def selected_skus(self) -> list:
+    def selected_skus(self) -> list[dict[str:Any]]:
         """This function returns the selected SKUs"""
 
         load_data = self.filter_data(self.read_range())
-        ans = []
+        ans: list[dict[str:Any]] = []
         # 如果没有选择SKU, 则返回None
         if self.selectedranges:
             if isinstance(self.selectedranges, tuple):
