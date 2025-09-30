@@ -302,8 +302,9 @@ class Photoshop:
                             if key == "color":
                                 target_layer.textItem.color = self.hex_to_rgb(attr_name)
                                 continue
-                            if isinstance(attr_name, (int, float)):
-                                attr_name = str(int(attr_name))
+                            if key == "contents":
+                                if isinstance(attr_name, (int, float)):
+                                    attr_name = str(int(attr_name))
 
                             setattr(target_layer.textItem, key, attr_name)
                     logger.info(f"图层 {layer_key} 已修改属性 {initial_state}")
