@@ -174,11 +174,12 @@ class Photoshop:
 
                 del self.layer_initial_state[需要恢复的]
             except Exception as e:
-                logger.info(f"恢复图层 {需要恢复的} 失败: {e}")
+                logger.error(f"恢复图层 {需要恢复的} 失败: {e}")
 
-        # 2. 执行任务之前看是否修改的属性需要记录 修改前状态
         for layer_name, layer_info in input_data.items():
+            # 2. 执行任务之前看是否修改的属性需要记录 修改前状态
             if layer_name not in self.layer_initial_state:
+                logger.debug(f"图层 {layer_name} 需要记录初始状态")
                 # 有visible 属性直接记录
                 if layer_info.get("visible", False):
                     self.save_initial_layer_state(layer_name, layer_info)
@@ -190,9 +191,23 @@ class Photoshop:
 
             current_state = self.layer_current_state.get(layer_name, {})
 
+            # 增加对textItem属性的检查
+            if "textItem" in current_state and "textItem" in layer_info:
+                current_text_item = current_state["textItem"]
+                new_text_item = layer_info["textItem"]
+
+                # 如果之前修改过字体大小或颜色，但这次不需要修改
+                if (current_text_item.get("size") is not None and "size" not in new_text_item) or \
+                   (current_text_item.get("color") is not None and "color" not in new_text_item):
+                    logger.info(f"图层 {layer_name} 需要先恢复字体大小和颜色到初始状态")
+                    self.restore_text_item_to_initial(layer_name)
+
             # 3. 判断是否需要真正修改
             if current_state != layer_info:
-                logger.info(f"图层 {layer_name} 需要修改")
+                logger.info(
+                    f"图层 {layer_name} 状态不一致\n修改前: {current_state}\n修改后: {layer_info}"
+                )
+                logger.debug(f"图层 {layer_name} 需要修改")
                 # 4. 执行修改
                 self.change_layer_state(layer_name, layer_info)
                 self.layer_current_state[layer_name] = layer_info
@@ -314,6 +329,12 @@ class Photoshop:
         except Exception as e:
             logger.error(f"修改图层 {layer_key} 失败: {e}")
 
+    def restore_text_item_to_initial(self, layer_name: str):
+        """将指定图层的文本属性恢复到初始状态"""
+        initial_state = self.layer_initial_state.get(layer_name, {})
+        if "textItem" in initial_state:
+            self.change_layer_state(layer_name, initial_state)
+            logger.info(f"图层 {layer_name} 的文本属性已恢复到初始状态")
 
 if __name__ == "__main__":
     pass
