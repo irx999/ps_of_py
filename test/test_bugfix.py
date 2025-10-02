@@ -5,24 +5,26 @@ from src.ps_core import Photoshop
 
 class TestBUGFIXModule(unittest.TestCase):
     def setUp(self):
+        """测试前准备"""
         pass
 
     def tearDown(self):
+        """测试后清理"""
         pass
 
     def test_fontchange(self):
         """测试字体修改"""
-        text_layer = "标题/标题2"
+        text_layer = "标题/标题1"
         dict_for_test = {
-            # "No1": {
-            #     text_layer: {
-            #         "visible": True,
-            #         "textItem": {
-            #             "contents": "标题第一次修改",
-            #             # "size": 50,
-            #         },
-            #     },
-            # },
+            "No1": {
+                text_layer: {
+                    "visible": True,
+                    "textItem": {
+                        "contents": "标题第一次修改",
+                        # "size": 50,
+                    },
+                },
+            },
             "No2": {
                 text_layer: {
                     "visible": True,
@@ -50,5 +52,5 @@ class TestBUGFIXModule(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # Run the tests
+    # 运行测试
     unittest.main()
