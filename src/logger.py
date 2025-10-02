@@ -40,6 +40,7 @@ class Logger:
 
     def formatter(self, is_console=False):
         str = f"%(asctime)-20s - %(levelname)-7s -> {self.log_name:^8} <- %(file_lineno_fixed)s - %(funcName)s - %(message)s"
+        str = "%(asctime)-20s - %(levelname)-4s %(file_lineno_fixed)s - %(message)s"
         return ColoredFormatter(str) if is_console else custom_formatter(str)
 
     def debug_notification(self):
