@@ -3,12 +3,10 @@
 import os
 import time
 
+from loguru import logger
 from photoshop import Session
 
-from src.logger import Logger
 from src.timer import timer
-
-logger = Logger(__name__, log_name="core", debug_mode=True)
 
 
 class Photoshop:
@@ -42,12 +40,12 @@ class Photoshop:
             self.doc = ps_session.active_document
 
             self.saveoptions = self.saveoptions_set(self.file_format)
-            self.layer_list: dict = {}  # 图层列表
 
+            self.layer_list: dict = {}  # 图层列表
             self.layer_initial_state: dict = {}  # 图层初始状态
             self.layer_current_state: dict = {}  # 图层当前状态
 
-            self.run_time_record_list = []
+            self.run_time_record_list = []  # 运行时间记录
 
     def reconnect(self):
         """重新建立 Photoshop 会话"""
@@ -110,7 +108,7 @@ class Photoshop:
             case "jpg" | "jpeg":
                 return self.ps_session.JPEGSaveOptions()
             case _:
-                return self.ps_session.PNGSaveOptions()
+                return self.ps_session.PNGSaveOptions(compression=8)
 
     def rgb_to_hex(self, r, g, b):
         """
@@ -197,8 +195,13 @@ class Photoshop:
                 new_text_item = layer_info["textItem"]
 
                 # 如果之前修改过字体大小或颜色，但这次不需要修改
-                if (current_text_item.get("size") is not None and "size" not in new_text_item) or \
-                   (current_text_item.get("color") is not None and "color" not in new_text_item):
+                if (
+                    current_text_item.get("size") is not None
+                    and "size" not in new_text_item
+                ) or (
+                    current_text_item.get("color") is not None
+                    and "color" not in new_text_item
+                ):
                     logger.info(f"图层 {layer_name} 需要先恢复字体大小和颜色到初始状态")
                     self.restore_text_item_to_initial(layer_name)
 
@@ -217,7 +220,7 @@ class Photoshop:
         # 5. 导出文件
         self.ps_saveas(export_name)
 
-        self.run_time_record_list.append(time.time() - start_time)
+        self.run_time_record_list.append({export_name: time.time() - start_time})
 
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
@@ -335,6 +338,8 @@ class Photoshop:
         if "textItem" in initial_state:
             self.change_layer_state(layer_name, initial_state)
             logger.info(f"图层 {layer_name} 的文本属性已恢复到初始状态")
+            logger.info(self.run_time_record_list)
+
 
 if __name__ == "__main__":
     pass
