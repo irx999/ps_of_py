@@ -3,12 +3,10 @@
 import os
 import time
 
+from loguru import logger
 from photoshop import Session
 
-from src.logger import Logger
 from src.timer import timer
-
-logger = Logger(__name__, log_name="core", debug_mode=True)
 
 
 class Photoshop:
@@ -222,7 +220,7 @@ class Photoshop:
         # 5. 导出文件
         self.ps_saveas(export_name)
 
-        self.run_time_record_list.append(time.time() - start_time)
+        self.run_time_record_list.append({export_name: time.time() - start_time})
 
     def get_layer_by_layername(self, layername: str):
         """根据层名获取图层"""
@@ -340,6 +338,7 @@ class Photoshop:
         if "textItem" in initial_state:
             self.change_layer_state(layer_name, initial_state)
             logger.info(f"图层 {layer_name} 的文本属性已恢复到初始状态")
+            logger.info(self.run_time_record_list)
 
 
 if __name__ == "__main__":
