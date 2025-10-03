@@ -175,6 +175,9 @@ class Photoshop:
                 # 有visible属性直接记录
                 if layer_info.get("visible", False):
                     self.save_initial_layer_state(layer_name, layer_info)
+
+                elif layer_info.get("move", False):
+                    self.save_initial_layer_state(layer_name, layer_info)
                 # 有文本属性中的size或者color
                 elif "textItem" in layer_info and any(
                     layer_info["textItem"].get(key) for key in ["size", "color"]
@@ -182,6 +185,18 @@ class Photoshop:
                     self.save_initial_layer_state(layer_name, layer_info)
 
             current_state = self.layer_current_state.get(layer_name, {})
+
+            # 增加对move属性的检查
+            if "move" in current_state:
+                current_move = current_state["move"]
+                new_move = layer_info.get("move", None)
+                # 如果之前修改过位置或旋转，但这次不需要修改
+                if current_move is not None and new_move is None:
+                    logger.info(f"图层 {layer_name} 需要先恢复位置到初始状态")
+                    self.change_layer_state(
+                        layer_name,
+                        self.layer_initial_state.get(layer_name, {}),
+                    )
 
             # 增加对textItem属性的检查
             if "textItem" in current_state and "textItem" in layer_info:
@@ -288,6 +303,8 @@ class Photoshop:
                 state = {}
                 if "visible" in layerinfo:
                     state["visible"] = target_layer.visible
+                if "move" in layerinfo:
+                    state["move"] = (target_layer.bounds[0], target_layer.bounds[0])  # type: ignore
                 if "textItem" in layerinfo:
                     state["textItem"] = {}
                     text_item = target_layer.textItem
@@ -308,6 +325,14 @@ class Photoshop:
             except Exception as e:
                 logger.info(f"无法保存图层 {layername} 的初始状态: {e}")
 
+    def restore_text_item_to_initial(self, layer_name: str):
+        """将指定图层的文本属性恢复到初始状态"""
+        initial_state = self.layer_initial_state.get(layer_name, {})
+        if "textItem" in initial_state:
+            self.change_layer_state(layer_name, initial_state)
+            logger.info(f"图层 {layer_name} 的文本属性已恢复到初始状态")
+            logger.info(self.run_time_record_list)
+
     def change_layer_state(self, layer_key: str, change_state: dict) -> dict:
         """
         修改图层状态
@@ -325,6 +350,15 @@ class Photoshop:
                 # 修改可见性
                 if "visible" in change_state:
                     target_layer.visible = change_state["visible"]
+                # 修改旋转角度
+                if "move" in change_state:
+                    x = target_layer.bounds[0]  # type: ignore
+                    y = target_layer.bounds[1]  # type: ignore
+                    target_layer.translate(
+                        change_state["move"][0] - x, change_state["move"][1] - y
+                    )
+                if "rotate" in change_state:
+                    target_layer.rotate(change_state["rotate"])
                 # 如果是文本图层，修改文本属性
                 if "textItem" in change_state:
                     text_item_state = change_state["textItem"]
@@ -346,11 +380,3 @@ class Photoshop:
         except Exception as e:
             logger.error(f"修改图层 {layer_key} 失败: {e}")
             return {layer_key: "修改失败"}
-
-    def restore_text_item_to_initial(self, layer_name: str):
-        """将指定图层的文本属性恢复到初始状态"""
-        initial_state = self.layer_initial_state.get(layer_name, {})
-        if "textItem" in initial_state:
-            self.change_layer_state(layer_name, initial_state)
-            logger.info(f"图层 {layer_name} 的文本属性已恢复到初始状态")
-            logger.info(self.run_time_record_list)
