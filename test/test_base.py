@@ -8,6 +8,7 @@ class TestBaseModule(unittest.TestCase):
     def setUp(self):
         pass
         self.ps = Photoshop(psd_name="测试", export_folder="./test_export")
+        print("\n")
 
     def tearDown(self):
         # time.sleep(2)
@@ -15,7 +16,7 @@ class TestBaseModule(unittest.TestCase):
         pass
 
     def test_info(self) -> None:
-        pprint(self.ps)
+        pprint(self.ps.get_psd_info())
 
     def test_fontchange(self):
         """测试字体修改"""
@@ -27,8 +28,8 @@ class TestBaseModule(unittest.TestCase):
                 文本: {
                     "visible": True,
                     "textItem": {
-                        "contents": "标题第一次修改->调整大小",
-                        "size": 50,
+                        "contents": "第一次修改->调整字体大小,第一张可见,第二张不可见",
+                        "size": 35,
                         # "color": "#086D7A",
                     },
                 },
@@ -43,7 +44,7 @@ class TestBaseModule(unittest.TestCase):
                 文本: {
                     "visible": True,
                     "textItem": {
-                        "contents": "标题第二次修改->调整颜色",
+                        "contents": "第二次修改->调整颜色,第一张不可见,第二张可见",
                         # "size": 35,
                         "color": "#A00000",
                     },
@@ -59,8 +60,11 @@ class TestBaseModule(unittest.TestCase):
                 文本: {
                     "visible": True,
                     "textItem": {
-                        "contents": "标题第三次修改->复原",
+                        "contents": "第三次修改->复原,第一张可见,第二张可见",
                     },
+                },
+                图片1: {
+                    "visible": True,
                 },
                 图片2: {
                     "visible": True,
@@ -70,7 +74,7 @@ class TestBaseModule(unittest.TestCase):
                 文本: {
                     "visible": True,
                     "textItem": {
-                        "contents": "标题第四次修改->复原",
+                        "contents": "第四次修改->复原",
                     },
                 },
             },
@@ -79,4 +83,5 @@ class TestBaseModule(unittest.TestCase):
         for export_name, input_data in dict_for_test.items():
             self.ps.core(export_name, input_data)
         self.ps.restore_all_layers_to_initial()
+        print(self.ps.run_time_record)
         self.ps.doc.close()
