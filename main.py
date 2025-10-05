@@ -3,7 +3,7 @@
 import os
 import sys
 
-from src.load_data import LoadData
+from load_data import LoadData
 from src.ps_core import Photoshop
 
 
@@ -34,12 +34,10 @@ def main():
         ps = PSFactory.create_engine("photoshop", *ps_settings)
 
         # 遍历整个字典
-        for task in load_data.selected_skus():
-            print(task["内容"])
-            ps.core(task["任务名"] + suffix, task["内容"])
-
-        # 执行完毕后恢复图层状态
-        ps.restore_all_layers_to_initial()
+        with ps:
+            for task in load_data.selected_skus():
+                print(task["内容"])
+                ps.core(task["任务名"] + suffix, task["内容"])
 
     except Exception as e:
         print(f"程序执行出错: {e}")

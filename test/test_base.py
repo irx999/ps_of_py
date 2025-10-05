@@ -75,6 +75,7 @@ class TestBaseModule(unittest.TestCase):
                     "visible": True,
                     "textItem": {
                         "contents": "第三次修改->复原,第一张可见,第二张可见",
+                        "font": "DingTalk-JinBuTi",
                     },
                 },
                 图片1: {

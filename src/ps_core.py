@@ -6,10 +6,10 @@ import time
 from loguru import logger
 from photoshop import Session
 
-from .layer_factory import LayerFactory
+from .ps_layer_factory import LayerFactory
 from .ps_utils import ExportOptionsFactory
 
-logger.add("ps.log", rotation="1 MB")
+logger.add("./logs/Photoshop.log", rotation="1 MB")
 
 
 class Photoshop:

@@ -16,10 +16,18 @@ class TestBUGFIXModule(unittest.TestCase):
     def test_bugfix(self):
         """测试字体修改"""
         图片1 = "图片/图片1"
+        文本 = "标题/标题1"
         dict_for_test = {
             "No1": {
                 图片1: {
                     "visible": False,
+                },
+                文本: {
+                    "visible": True,
+                    "textItem": {
+                        "contents": 3.14,
+                        "font": "悠哉字体",
+                    },
                 },
             },
         }

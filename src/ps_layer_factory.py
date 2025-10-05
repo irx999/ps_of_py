@@ -9,7 +9,7 @@ from photoshop.api._layerSet import LayerSet
 
 from .ps_utils import ColorFactory
 
-logger.add("layer.log", rotation="1 MB")
+logger.add("./logs/LayerFactory.log", rotation="1 MB")
 
 
 class LayerFactory:
@@ -89,7 +89,9 @@ class LayerFactory:
         """修改图层状态"""
         layer_list = self.get_layer_by_layername(layer_name)
         for layer in layer_list:
+            # 修改图层状态
             self._change_layer_state(layer, change_state)
+            # 保存当前状态
             self.current_state[layer_name] = change_state
 
     def save_initial_layer_state(self, layername: str, layerinfo: dict):
@@ -135,6 +137,7 @@ class LayerFactory:
             text_item = layer.textItem
             state["textItem"]["contents"] = text_item.contents
             state["textItem"]["size"] = text_item.size
+            state["textItem"]["font"] = text_item.font
             font_color = text_item.color.rgb
             # 将RGB颜色转换为十六进制
             state["textItem"]["color"] = ColorFactory.rgb_to_hex(
@@ -165,11 +168,9 @@ class LayerFactory:
             text_item_state = change_state["textItem"]
             for key, attr_name in text_item_state.items():
                 if key == "color":
-                    layer.textItem.color = ColorFactory.hex_to_rgb(attr_name)
-                    continue
+                    attr_name = ColorFactory.hex_to_rgb(attr_name)
                 if key == "contents":
-                    if isinstance(attr_name, (int, float)):
-                        attr_name = str(int(attr_name))
+                    attr_name = str(attr_name)
 
                 setattr(layer.textItem, key, attr_name)
 
