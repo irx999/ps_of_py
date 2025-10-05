@@ -5,50 +5,29 @@ from src.ps_core import Photoshop
 
 class TestBUGFIXModule(unittest.TestCase):
     def setUp(self):
-        """测试前准备"""
         pass
+        self.ps = Photoshop(
+            psd_name="测试",
+            export_folder="./test_export",
+            colse_ps=True,
+        )
+        print("\n")
 
-    def tearDown(self):
-        """测试后清理"""
-        pass
-
-    def test_fontchange(self):
+    def test_bugfix(self):
         """测试字体修改"""
-        text_layer = "标题/标题1"
+        图片1 = "图片/图片1"
         dict_for_test = {
             "No1": {
-                text_layer: {
-                    "visible": True,
-                    "textItem": {
-                        "contents": "标题第一次修改",
-                        # "size": 50,
-                    },
-                },
-            },
-            "No2": {
-                text_layer: {
-                    "visible": True,
-                    "textItem": {
-                        "contents": "标题第二次修改",
-                        "size": 100,
-                        "color": "#D60909",
-                    },
-                },
-            },
-            "No3": {
-                text_layer: {
-                    "visible": True,
-                    "textItem": {
-                        "contents": "标题第三次修改",
-                        # "size": 50,
-                    },
+                图片1: {
+                    "visible": False,
                 },
             },
         }
-        self.ps = Photoshop(psd_name="测试用例", export_folder="./test_export")
-        for export_name, input_data in dict_for_test.items():
-            self.ps.core(export_name, input_data)
-        # self.ps.restore_all_layers_to_initial()
+        with self.ps:
+            for export_name, input_data in dict_for_test.items():
+                self.ps.core(export_name, input_data)
+            print(self.ps.run_time_record)
+        print("测试结束")
 
 
 if __name__ == "__main__":
