@@ -1,5 +1,11 @@
 # ps_of_py
 
+
+## 官方文档
+[文档](https://photoshop-python-api.readthedocs.io/en/master/)
+
+
+
 ## todo
  - [ ] 多种参数调节,如指定图层位置
  - [ ] 完成更优雅的excel 交互
