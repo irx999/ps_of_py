@@ -1,3 +1,4 @@
+import os
 import unittest
 from pprint import pprint
 
@@ -6,10 +7,11 @@ from src.ps_core import Photoshop
 
 class TestBaseModule(unittest.TestCase):
     def setUp(self):
-        pass
+        print(os.getcwd())
         self.ps = Photoshop(
             psd_name="测试",
-            export_folder="./test_export",
+            psd_dir_path="test/test_psd",
+            export_folder="test/test_export",
             colse_ps=True,
         )
         print("\n")

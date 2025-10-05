@@ -9,3 +9,8 @@ dependencies = [
     "photoshop-python-api",
     "xlwings",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.16.0",
+]

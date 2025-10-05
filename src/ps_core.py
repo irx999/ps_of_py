@@ -18,7 +18,7 @@ class Photoshop:
     def __init__(
         self,
         psd_name: str,
-        psd_dir_path: str = None,
+        psd_dir_path: str = "psd",
         export_folder: str = "default_export_folder",
         file_format: str = "png",
         colse_ps: bool = False,
@@ -50,19 +50,23 @@ class Photoshop:
         """
         初始化Photoshop会话
         """
-        self.psd_file_path = self._get_psd_file_path()
-        with Session(file_path=self.psd_file_path, action="open") as ps_session:
-            self.ps_session = ps_session
-            self.doc = ps_session.active_document
+        try:
+            self.psd_file_path = self._get_psd_file_path()
+            with Session(file_path=self.psd_file_path, action="open") as ps_session:
+                self.ps_session = ps_session
+                self.doc = ps_session.active_document
 
-            # 使用工厂创建导出选项
-            self.saveoptions = ExportOptionsFactory.create_export_options(
-                self.file_format
-            )
+                # 使用工厂创建导出选项
+                self.saveoptions = ExportOptionsFactory.create_export_options(
+                    self.file_format
+                )
 
-        self.layer_factory = LayerFactory(ps_session)
+            self.layer_factory = LayerFactory(ps_session)
 
-        self.run_time_record: dict = {}  # 运行时间记录
+            self.run_time_record: dict = {}  # 运行时间记录
+        except Exception as e:
+            logger.error(f"初始化Photoshop会话失败: {e}")
+            raise Exception(f"初始化Photoshop会话失败: {e}")
 
     def _get_psd_file_path(self) -> str | None:
         """
@@ -70,12 +74,18 @@ class Photoshop:
         :return: PSD文件完整路径
         """
         try:
-            base_path = self.psd_dir_path or os.path.join(os.getcwd(), "psd")
+            # 如果传入的是绝对路径
+            if not os.path.isabs(self.psd_dir_path):
+                base_path = os.path.join(os.getcwd(), self.psd_dir_path)
+            else:
+                base_path = self.psd_dir_path
             # 尝试PSD和PSB两种格式
             for ext in [".psd", ".psb"]:
                 file_path = os.path.join(base_path, f"{self.psd_name}{ext}")
                 if os.path.isfile(file_path):
                     return file_path
+                raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
+
         except Exception as e:
             logger.error(f"获取PSD文件路径失败: {e}")
             raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
