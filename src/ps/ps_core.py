@@ -25,10 +25,12 @@ class Photoshop:
     ):
         """
         初始化Photoshop类
+
         :param psd_name: psd文件名
         :param psd_dir_path: psd文件路径,默认工作目录下的psd文件夹
         :param export_folder: 导出文件夹名,是在默认工作目录下创建
         :param file_format: 导出文件格式，默认为png
+        :param colse_ps: 是否在core结束时关闭photoshop
         """
         self.psd_name = psd_name
         self.psd_dir_path = psd_dir_path
@@ -47,9 +49,7 @@ class Photoshop:
             self.doc.close()
 
     def _init_ps_session(self):
-        """
-        初始化Photoshop会话
-        """
+        """初始化Photoshop会话"""
         try:
             self.psd_file_path = self._get_psd_file_path()
             with Session(file_path=self.psd_file_path, action="open") as ps_session:
@@ -71,6 +71,7 @@ class Photoshop:
     def _get_psd_file_path(self) -> str | None:
         """
         获取PSD文件路径
+
         :return: PSD文件完整路径
         """
         try:
@@ -93,6 +94,7 @@ class Photoshop:
     def _create_export_folder(self, export_folder: str) -> str:
         """
         创建导出文件夹
+
         :param export_folder: 导出文件夹名
         :return: 导出文件夹完整路径
         """
@@ -107,11 +109,7 @@ class Photoshop:
             raise FileNotFoundError(f"创建文件夹 {full_path} 失败: {e}")
 
     def get_psd_info(self) -> dict:
-        """
-        返回当前psd文件信息，包括所有图层集及其对应的图层
-        """
-        # 获取顶层图层
-
+        """返回当前psd文件信息"""
         with self:
             return {
                 "name": self.ps_session.active_document.name,
@@ -135,7 +133,12 @@ class Photoshop:
             raise Exception(f"保存文件到指定路径失败: {e}")
 
     def core(self, export_name: str, input_data: dict):
-        """核心处理函数"""
+        """
+        核心处理函数
+
+        :param export_name: 导出文件名
+        :param input_data: 输入数据，包含需要修改的图层属性
+        """
         start_time = time.time()
 
         # 1.查找已经修改但接下来不需要修改的图层，需要恢复的图层
@@ -145,12 +148,9 @@ class Photoshop:
             if not initial_state:
                 continue
             logger.info(f"正在恢复图层 {layer_to_restore} 到初始状态")
-            try:
-                self.layer_factory.change_layer_state(layer_to_restore, initial_state)
+            self.layer_factory.change_layer_state(layer_to_restore, initial_state)
 
-                del self.layer_factory.initial_state[layer_to_restore]
-            except Exception as e:
-                logger.error(f"恢复图层 {layer_to_restore} 失败: {e}")
+            del self.layer_factory.initial_state[layer_to_restore]
 
         # 2. 执行任务之前看是否修改的属性需要记录修改前状态
         for layer_name, change_state in input_data.items():
@@ -161,7 +161,7 @@ class Photoshop:
                     self.layer_factory.save_initial_layer_state(
                         layer_name, change_state
                     )
-                elif "visible" in change_state.keys():
+                elif "textItem" in change_state.keys():
                     if any(
                         change_state["textItem"].get(key) for key in ["size", "color"]
                     ):

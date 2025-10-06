@@ -1,6 +1,6 @@
 import unittest
 
-from src.ps_core import Photoshop
+from src.ps import Photoshop
 
 
 class TestBUGFIXModule(unittest.TestCase):

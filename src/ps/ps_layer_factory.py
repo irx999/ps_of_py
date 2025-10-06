@@ -25,7 +25,9 @@ class LayerFactory:
         self.run_time_record: dict = {}  # 运行时间记录
 
     def get_all_layers(self) -> list[LayerSet | ArtLayer]:
-        """获取所有图层"""
+        """获取所有图层
+        :return: 图层信息
+        """
         layers = []
         layers.append(
             {"TOP": [layer.name for layer in self.ps_session.active_document.artLayers]}
@@ -41,7 +43,10 @@ class LayerFactory:
         return layers
 
     def get_layer_by_layername(self, layername: str) -> list[LayerSet | ArtLayer]:
-        """根据层名获取图层"""
+        """根据层名获取图层
+
+        :return layer_list: 图层名称
+        """
 
         if layername in self.layer_dict:
             # 如果层名在图层列表中，则直接返回
@@ -86,7 +91,10 @@ class LayerFactory:
         return change_layer_list
 
     def change_layer_state(self, layer_name: str, change_state: dict):
-        """修改图层状态"""
+        """修改图层状态
+        :param layer_name: 图层名称
+        :param layerinfo: 图层信息
+        """
         layer_list = self.get_layer_by_layername(layer_name)
         for layer in layer_list:
             # 修改图层状态
@@ -95,7 +103,11 @@ class LayerFactory:
             self.current_state[layer_name] = change_state
 
     def save_initial_layer_state(self, layername: str, layerinfo: dict):
-        """保存图层状态"""
+        """保存图层状态
+
+        :param layer_name: 图层名称
+        :param layerinfo: 图层信息
+        """
         if layername not in self.initial_state:
             target_layers = self.get_layer_by_layername(layername)
             for target_layer in target_layers:
@@ -109,7 +121,10 @@ class LayerFactory:
                 logger.info(f"保存初始状态成功: {layername=}, {state=}")
 
     def restore_text_item_to_initial(self, layer_name: str):
-        """将指定图层的文本属性恢复到初始状态"""
+        """将指定图层的文本属性恢复到初始状态
+
+        :param layer_name: 图层名称
+        """
         initial_state = self.initial_state.get(layer_name, {})
         if "textItem" in initial_state:
             self.change_layer_state(layer_name, initial_state)
@@ -123,6 +138,7 @@ class LayerFactory:
     def _create_layer_state(self, layer: LayerSet | ArtLayer, layer_info: dict) -> dict:
         """
         记录图层状态信息
+
         :param layer: 图层对象
         :param layer_info: 图层信息
         :return: 初始状态字典
@@ -148,6 +164,7 @@ class LayerFactory:
     def _change_layer_state(self, layer: LayerSet | ArtLayer, change_state: dict):
         """
         修改图层状态
+
         :param layer_key: 图层名称
         :param change_state: 初始状态
         :return: 修改结果

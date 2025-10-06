@@ -60,6 +60,7 @@ class ColorFactory:
     def rgb_to_hex(r, g, b):
         """
         将RGB颜色值转换为十六进制颜色值
+
         :param r: 红色值
         :param g: 绿色值
         :param b: 蓝色值
@@ -68,9 +69,10 @@ class ColorFactory:
         return f"#{r:02x}{g:02x}{b:02x}"
 
     @staticmethod
-    def hex_to_rgb(hex_color: str):
+    def hex_to_rgb(hex_color: str) -> SolidColor:
         """
         将十六进制颜色值转换为Photoshop的SolidColor对象
+
         :param hex_color: 16进制颜色值
         :return: photoshop的SolidColor对象
         """

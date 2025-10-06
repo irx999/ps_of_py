@@ -2,7 +2,7 @@ import os
 import unittest
 from pprint import pprint
 
-from src.ps_core import Photoshop
+from src.ps import Photoshop
 
 
 class TestBaseModule(unittest.TestCase):
@@ -14,15 +14,99 @@ class TestBaseModule(unittest.TestCase):
             export_folder="test/test_export",
             colse_ps=True,
         )
-        print("\n")
 
     def tearDown(self):
-        # time.sleep(2)
-        # self.ps.doc.close()
-        pass
+        pprint(self.ps.run_time_record)
+        pprint(self.ps.layer_factory.run_time_record)
+        del self.ps
+        print("测试结束\n")
 
-    def test_info(self) -> None:
+    def test_init_ps_session(self) -> None:
+        self.ps.colse_ps = True
+        with self.ps:
+            pass
+
+    def test_ps_saveas(self) -> None:
+        with self.ps:
+            self.ps.ps_saveas("未修改图片")
+
+    def test_get_psd_info(self) -> None:
         pprint(self.ps.get_psd_info())
+
+    def test_visible(self):
+        """测试可显"""
+        图片1 = "图片/图片1"
+        dict_for_test = {
+            "test_visible_1": {
+                图片1: {
+                    "visible": True,
+                }
+            },
+            "test_visible_2": {
+                图片1: {
+                    "visible": False,
+                }
+            },
+        }
+        with self.ps:
+            for export_name, input_data in dict_for_test.items():
+                self.ps.core(export_name, input_data)
+
+    def test_move(self):
+        """测试移动"""
+        图片1 = "图片/图片1"
+        dict_for_test = {
+            "test_move_1": {
+                图片1: {
+                    "move": (350, 350),
+                }
+            },
+            "test_move_2": {
+                图片1: {
+                    "move": (0, 0),
+                }
+            },
+        }
+        with self.ps:
+            for export_name, input_data in dict_for_test.items():
+                self.ps.core(export_name, input_data)
+
+    def test_testItem(self):
+        """测试文本"""
+        文本 = "标题/标题1"
+        文本2 = "标题/标题2"
+        dict_for_test = {
+            "test_test_1": {
+                文本: {
+                    "textItem": {
+                        "contents": "第一次修改",
+                        "size": 35,
+                        "color": "#A00000",
+                        "font": "DingTalk-JinBuTi",
+                    },
+                },
+            },
+            "test_test_2": {
+                文本2: {
+                    "textItem": {
+                        "contents": "第二次修改",
+                        "size": 20,
+                        "color": "#00FF37",
+                        "font": "DingTalk-JinBuTi",
+                    },
+                },
+            },
+        }
+        with self.ps:
+            for export_name, input_data in dict_for_test.items():
+                self.ps.core(export_name, input_data)
+
+    def test_all_change(self):
+        """测试批量修改"""
+
+        with self.ps:
+            for export_name, input_data in self.dict_for_test().items():
+                self.ps.core(export_name, input_data)
 
     def dict_for_test(self):
         文本 = "标题/标题1"
@@ -98,16 +182,6 @@ class TestBaseModule(unittest.TestCase):
         }
 
         return dict_for_test
-
-    def test_fontchange(self):
-        """测试字体修改"""
-
-        with self.ps:
-            for export_name, input_data in self.dict_for_test().items():
-                self.ps.core(export_name, input_data)
-            pprint(self.ps.run_time_record)
-            pprint(self.ps.layer_factory.run_time_record)
-        pprint("测试结束")
 
 
 if __name__ == "__main__":
