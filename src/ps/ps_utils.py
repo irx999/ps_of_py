@@ -49,8 +49,7 @@ class ExportOptionsFactory:
         format_lower = file_format.lower()
         if format_lower in format_map:
             return format_map[format_lower]()
-        else:
-            raise ValueError(f"Unsupported file format: {file_format}")
+        raise ValueError(f"Unsupported file format: {file_format}")
 
 
 class ColorFactory:

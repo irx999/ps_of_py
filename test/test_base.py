@@ -21,16 +21,16 @@ class TestBaseModule(unittest.TestCase):
         del self.ps
         print("测试结束\n")
 
-    def test_init_ps_session(self) -> None:
+    def test_init_ps_session(self):
         self.ps.colse_ps = True
         with self.ps:
             pass
 
-    def test_ps_saveas(self) -> None:
+    def test_ps_saveas(self):
         with self.ps:
             self.ps.ps_saveas("未修改图片")
 
-    def test_get_psd_info(self) -> None:
+    def test_get_psd_info(self):
         pprint(self.ps.get_psd_info())
 
     def test_visible(self):
@@ -114,7 +114,7 @@ class TestBaseModule(unittest.TestCase):
         图片2 = "图片/图片2"
         矩形 = "矩形/矩形1"
         dict_for_test = {
-            "No1": {
+            "test_all1": {
                 文本: {
                     "visible": True,
                     "textItem": {
@@ -135,7 +135,7 @@ class TestBaseModule(unittest.TestCase):
                     "rotate": 180,
                 },
             },
-            "No2": {
+            "test_all2": {
                 文本: {
                     "visible": True,
                     "textItem": {
@@ -156,7 +156,7 @@ class TestBaseModule(unittest.TestCase):
                     "rotate": -180,
                 },
             },
-            "No3": {
+            "test_all3": {
                 文本: {
                     "visible": True,
                     "textItem": {
@@ -171,7 +171,7 @@ class TestBaseModule(unittest.TestCase):
                     "visible": True,
                 },
             },
-            "No4": {
+            "test_all4": {
                 文本: {
                     "visible": True,
                     "textItem": {
