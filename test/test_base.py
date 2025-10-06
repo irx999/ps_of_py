@@ -182,7 +182,3 @@ class TestBaseModule(unittest.TestCase):
         }
 
         return dict_for_test
-
-
-if __name__ == "__main__":
-    unittest.main()
