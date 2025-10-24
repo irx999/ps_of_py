@@ -4,7 +4,7 @@ import os
 import sys
 
 from load_data import LoadData
-from src.ps_core import Photoshop
+from src.ps.ps_core import Photoshop
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.dirname(sys.executable))

@@ -171,24 +171,26 @@ class LayerFactory:
         """
         start_time = time.time()
 
-        if "visible" in change_state:
+        if "visible" in change_state and layer is LayerSet and layer is ArtLayer:
             layer.visible = change_state["visible"]
         # 修改旋转角度
         if "move" in change_state:
             x = layer.bounds[0]  # type: ignore
             y = layer.bounds[1]  # type: ignore
             layer.translate(change_state["move"][0] - x, change_state["move"][1] - y)
+        # 修改旋转角度
         if "rotate" in change_state:
             layer.rotate(change_state["rotate"])
         # 如果是文本图层，修改文本属性
         if "textItem" in change_state:
             text_item_state = change_state["textItem"]
             for key, attr_name in text_item_state.items():
+                # 如果是颜色，则将十六进制颜色转换为RGB颜色
                 if key == "color":
                     attr_name = ColorFactory.hex_to_rgb(attr_name)
+                # 如果是内容，则转换为字符串
                 if key == "contents":
                     attr_name = str(attr_name)
-
                 setattr(layer.textItem, key, attr_name)
 
         self.run_time_record[layer.name + str(change_state)] = round(

@@ -96,6 +96,22 @@ class TestBaseModule(unittest.TestCase):
                     },
                 },
             },
+            "test_test_3": {
+                文本2: {
+                    "textItem": {
+                        "contents": "第三次修改",
+                        "strikeThru": 3,
+                    },
+                },
+            },
+            "test_test_4": {
+                文本2: {
+                    "textItem": {
+                        "contents": "第四次修改",
+                        "strikeThru": 2,
+                    },
+                },
+            },
         }
         with self.ps:
             for export_name, input_data in dict_for_test.items():
