@@ -154,6 +154,7 @@ class LayerFactory:
             state["textItem"]["contents"] = text_item.contents
             state["textItem"]["size"] = text_item.size
             state["textItem"]["font"] = text_item.font
+            state["textItem"]["strikeThru"] = text_item.strikeThru.value
             font_color = text_item.color.rgb
             # 将RGB颜色转换为十六进制
             state["textItem"]["color"] = ColorFactory.rgb_to_hex(

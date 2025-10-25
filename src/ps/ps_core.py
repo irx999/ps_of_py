@@ -190,14 +190,16 @@ class Photoshop:
                 current_text_item = current_state["textItem"]
                 new_text_item = change_state["textItem"]
 
-                # 如果之前修改过字体大小或颜色，但这次不需要修改
-                if (
-                    current_text_item.get("size") is not None
-                    and "size" not in new_text_item
-                ) or (
-                    current_text_item.get("color") is not None
-                    and "color" not in new_text_item
-                ):
+                # 如果之前修改过字体   大小颜色,删除线，但这次不需要修改
+                text_properties = ["size", "color", "strikeThru"]
+                needs_restore = any(
+                    current_text_item.get(prop) is not None
+                    and prop not in new_text_item
+                    for prop in text_properties
+                )
+                if needs_restore:
+                    logger.info(f"图层 {layer_name} 需要先恢复字体大小和颜色到初始状态")
+                    self.layer_factory.restore_text_item_to_initial(layer_name)
                     logger.info(f"图层 {layer_name} 需要先恢复字体大小和颜色到初始状态")
                     self.layer_factory.restore_text_item_to_initial(layer_name)
 

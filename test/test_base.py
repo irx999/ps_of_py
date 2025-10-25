@@ -100,7 +100,7 @@ class TestBaseModule(unittest.TestCase):
                 文本2: {
                     "textItem": {
                         "contents": "第三次修改",
-                        "strikeThru": 3,
+                        "strikeThru": 2,
                     },
                 },
             },
@@ -108,7 +108,6 @@ class TestBaseModule(unittest.TestCase):
                 文本2: {
                     "textItem": {
                         "contents": "第四次修改",
-                        "strikeThru": 2,
                     },
                 },
             },
