@@ -5,6 +5,7 @@ import time
 
 from loguru import logger
 from photoshop import Session
+from photoshop.api import Application
 
 from .ps_layer_factory import LayerFactory
 from .ps_utils import ExportOptionsFactory
@@ -21,6 +22,7 @@ class Photoshop:
         psd_dir_path: str = "psd",
         export_folder: str = "default_export_folder",
         file_format: str = "png",
+        suffix: str = "",
         colse_ps: bool = False,
     ):
         """
@@ -36,10 +38,25 @@ class Photoshop:
         self.psd_dir_path = psd_dir_path
         self.export_folder = self._create_export_folder(export_folder)
         self.file_format = file_format.lower()
+        self.suffix = suffix
         self.colse_ps = colse_ps
+        logger.info(
+            f"初始化Photoshop类成功,{
+                (
+                    self.psd_name,
+                    self.psd_dir_path,
+                    self.export_folder,
+                    self.file_format,
+                    self.suffix,
+                    self.colse_ps,
+                )
+            }"
+        )
 
     def __enter__(self):
         """初始化Photoshop会话"""
+        self.app = Application()
+
         return self._init_ps_session()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -121,7 +138,7 @@ class Photoshop:
     def ps_saveas(self, export_name: str):
         """保存文件到指定路径"""
         try:
-            path = f"{self.export_folder}/{export_name}.{self.file_format}"
+            path = f"{self.export_folder}/{export_name}{self.suffix}.{self.file_format}"
             self.doc.saveAs(
                 path,
                 self.saveoptions,

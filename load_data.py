@@ -38,16 +38,25 @@ class LoadData:
     def read_settings(self) -> List[Any]:
         """读取导出配置信息"""
         try:
+            if self.sheet.range("colse_ps").value == "是":
+                colse_ps = True
+            else:
+                colse_ps = False
+        except Exception:
+            colse_ps = True
+
+        try:
             settings: List[Any] = [
                 self.sheet.range("psd_name").value,
                 self.sheet.range("psd_file_path").value,
                 self.sheet.range("export_folder").value,
                 self.sheet.range("file_format").value,
                 self.sheet.range("suffix").value,
+                colse_ps,
             ]
         except ValueError as e:
             print(f"无法读取到表格中的配置信息,将使用默认配置\n{e}")
-            settings = [None, None, "导出图片", "png", ""]
+            settings = [None, None, "导出图片", "png", False]
         return settings
 
     def read_range(self) -> List[Dict[str, Any]]:
@@ -55,11 +64,15 @@ class LoadData:
         result_list = []
 
         for row in self.table_values:
-            row_dict = {k: v for k, v in zip_longest(self.table_header, row, fillvalue=None)}
+            row_dict = {
+                k: v for k, v in zip_longest(self.table_header, row, fillvalue=None)
+            }
             result_list.append(row_dict)
         return result_list
 
-    def filter_data(self, input_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    def filter_data(
+        self, input_data: List[Dict[str, Any]]
+    ) -> Dict[str, Dict[str, Any]]:
         """过滤数据，构造图层修改指令"""
         result_dict = {}
         for row_dict in input_data:
@@ -70,7 +83,7 @@ class LoadData:
                     # 创建单个图层的字典
                     layer_info = {}
                     # 匹配标题属性
-                    header_parts = header.split("丨")
+                    header_parts = header.split("|")
                     match header_parts:
                         # 匹配修改文本图层属性
                         case ["文本", str(layer_set), str(layer_name)]:
@@ -81,8 +94,23 @@ class LoadData:
                             )
 
                             layer_info["textItem"] = {}
-                            cell_value_parts = str(row_dict[header]).split("丨")
+                            cell_value_parts = str(row_dict[header]).split("|")
                             match cell_value_parts:
+                                case [
+                                    str(text),
+                                    str(font_size),
+                                    str(font_color),
+                                    str(strikeThru),
+                                ]:
+                                    layer_info["textItem"]["contents"] = text
+                                    if font_size != "":
+                                        layer_info["textItem"]["size"] = int(font_size)
+                                    if font_color != "":
+                                        layer_info["textItem"]["color"] = font_color
+                                    if strikeThru != "":
+                                        layer_info["textItem"]["strikeThru"] = int(
+                                            strikeThru
+                                        )
                                 case [str(text), str(font_size), str(font_color)]:
                                     layer_info["textItem"]["contents"] = text
                                     layer_info["textItem"]["size"] = int(font_size)
@@ -91,7 +119,9 @@ class LoadData:
                                     layer_info["textItem"]["contents"] = text
                                     layer_info["textItem"]["size"] = int(font_size)
                                 case _:
-                                    layer_info["textItem"]["contents"] = row_dict[header]
+                                    layer_info["textItem"]["contents"] = row_dict[
+                                        header
+                                    ]
 
                         # 匹配表头中修改可显性图层属性
                         case ["可显性", str(layer_set_1), str(layer_set_2)]:
@@ -105,7 +135,7 @@ class LoadData:
                             else:
                                 layer_info["图层路径"] = [layer_set_1, layer_set_2]
                             # 匹配单元格内容
-                            cell_value_parts = row_dict[header].split("丨")
+                            cell_value_parts = row_dict[header].split("|")
                             match cell_value_parts:
                                 # 如果是T或F, 则直接设置visible属性
                                 case [str(layer_name), "T"]:
@@ -138,7 +168,9 @@ class LoadData:
                 sku_list = [self.selected_ranges]
             for filename, content in processed_data.items():
                 if filename in sku_list:
-                    result.append({"任务名": str(filename).replace(".0", ""), "内容": content})
+                    result.append(
+                        {"任务名": str(filename).replace(".0", ""), "内容": content}
+                    )
         return result
 
 

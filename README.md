@@ -4,6 +4,9 @@
 <h1 align="center">让设计工作更加高效 | 让重复操作自动化</h1>
 <p align="center"> <img src="https://skillicons.dev/icons?i=vscode,python,ps,git" /><br></p>
 
+
+
+
 > [!TIP]
 > **基于Python和Adobe Photoshop API的自动化批处理工具**
 
@@ -12,6 +15,10 @@
 
 > [!WARNING]
 > **进行PS 操作时候请勿再修改PSD**
+
+
+# 🌟 官方文档 / OFFICIAL_DOCUMENTATION
+[photoshop_python_api](https://photoshop-python-api.readthedocs.io/en/master/index.html)
 
 # 🌟 特别功能 /  Special Features
 

@@ -31,6 +31,8 @@ def main():
                 print(task["内容"])
                 ps.core(task["任务名"], task["内容"])
 
+            ps.app.doJavaScript(f'alert("save to jpg: {ps_settings}")')
+
     except Exception as e:
         print(f"程序执行出错: {e}")
 
