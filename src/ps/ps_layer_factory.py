@@ -172,8 +172,11 @@ class LayerFactory:
         """
         start_time = time.time()
 
-        if "visible" in change_state and layer is LayerSet and layer is ArtLayer:
+        # if "visible" in change_state and (layer is LayerSet or layer is ArtLayer):
+        if "visible" in change_state:
             layer.visible = change_state["visible"]
+        else:
+            logger.debug("这里没有被触发")
         # 修改旋转角度
         if "move" in change_state:
             x = layer.bounds[0]  # type: ignore

@@ -108,7 +108,7 @@ class Photoshop:
             logger.error(f"获取PSD文件路径失败: {e}")
             raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
 
-    def _create_export_folder(self, export_folder: str) -> str:
+    def _create_export_folder_1(self, export_folder: str) -> str:
         """
         创建导出文件夹
 
@@ -124,6 +124,24 @@ class Photoshop:
 
         except Exception as e:
             raise FileNotFoundError(f"创建文件夹 {full_path} 失败: {e}")
+
+    def _create_export_folder(self, export_folder: str | None) -> str:
+        """返回导出文件夹路径"""
+        try:
+            if not export_folder or export_folder.strip() == "":
+                export_folder = "default_export_folder"
+
+            full_path = os.path.join(os.getcwd(), export_folder)
+
+            if not os.path.exists(full_path):
+                os.makedirs(full_path)
+                logger.info(f"创建文件夹 {full_path} 成功")
+
+            return full_path
+
+        except Exception as e:
+            logger.error(f"创建文件夹 {export_folder} 失败: {e}")
+            return ""
 
     def get_psd_info(self) -> dict:
         """返回当前psd文件信息"""

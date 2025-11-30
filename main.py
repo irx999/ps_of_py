@@ -16,6 +16,12 @@ if getattr(sys, "frozen", False):
     os.chdir(main_working_dir)
 
 
+else:
+    main__working_dir = os.path.dirname(__file__)
+    sys.path.append(main__working_dir)
+    os.chdir(main__working_dir)
+
+
 def main():
     """主启动函数"""
     try:
@@ -31,7 +37,7 @@ def main():
                 print(task["内容"])
                 ps.core(task["任务名"], task["内容"])
 
-            ps.app.doJavaScript(f'alert("save to jpg: {ps_settings}")')
+            ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
 
     except Exception as e:
         print(f"程序执行出错: {e}")

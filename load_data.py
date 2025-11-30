@@ -86,12 +86,8 @@ class LoadData:
                     header_parts = header.split("|")
                     match header_parts:
                         # 匹配修改文本图层属性
-                        case ["文本", str(layer_set), str(layer_name)]:
-                            layer_info["图层路径"] = (
-                                [layer_name]
-                                if layer_set == ""
-                                else [layer_set, layer_name]
-                            )
+                        case ["文本", *layer_list]:
+                            layer_info["图层路径"] = layer_list
 
                             layer_info["textItem"] = {}
                             cell_value_parts = str(row_dict[header]).split("|")
@@ -124,16 +120,14 @@ class LoadData:
                                     ]
 
                         # 匹配表头中修改可显性图层属性
-                        case ["可显性", str(layer_set_1), str(layer_set_2)]:
-                            if layer_set_1 == "" and layer_set_2 == "":
+                        case ["可显性", *layer_list]:
+                            if layer_list[0] == "":
                                 layer_info["图层路径"] = []
                             # 这里如果两个图层组需要操作两次的话, 就会在表格中重复, excel 会自动多一个复制处理
-                            elif layer_set_2 == "" or layer_set_2 in [
-                                str(i) for i in range(1, 11)
-                            ]:
-                                layer_info["图层路径"] = [layer_set_1]
+                            elif layer_list[-1] in [str(i) for i in range(1, 11)]:
+                                layer_info["图层路径"] = layer_list[:-1]
                             else:
-                                layer_info["图层路径"] = [layer_set_1, layer_set_2]
+                                layer_info["图层路径"] = layer_list
                             # 匹配单元格内容
                             cell_value_parts = row_dict[header].split("|")
                             match cell_value_parts:
