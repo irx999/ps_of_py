@@ -77,7 +77,10 @@ class LoadData:
         result_dict = {}
         for row_dict in input_data:
             # 创建一个所有图层的字典
-            layer_dict = {}
+            layer_dict = {
+                "其他信息": {},
+                "修改信息": {},
+            }
             for header in row_dict.keys():
                 if row_dict[header] is not None:
                     # 创建单个图层的字典
@@ -143,10 +146,18 @@ class LoadData:
                                     layer_info["图层路径"].append(row_dict[header])
                                     layer_info["visible"] = True
 
+                        # 匹配其他信息
+                        case _:
+                            layer_dict["其他信息"][header] = row_dict[header]
+                            pass
+
+                            # layer_info["其他信息"] = []
+                            # layer_info["其他信息"].append(row_dict[header])
+
                     if layer_info:
                         full_path = "/".join(layer_info["图层路径"])
                         del layer_info["图层路径"]
-                        layer_dict[full_path] = layer_info
+                        layer_dict["修改信息"][full_path] = layer_info
             result_dict[row_dict["导出文件名"]] = layer_dict
         return result_dict
 
@@ -163,7 +174,11 @@ class LoadData:
             for filename, content in processed_data.items():
                 if filename in sku_list:
                     result.append(
-                        {"任务名": str(filename).replace(".0", ""), "内容": content}
+                        {
+                            "任务名": str(filename).replace(".0", ""),
+                            "其他信息": content["其他信息"],
+                            "修改信息": content["修改信息"],
+                        }
                     )
         return result
 
