@@ -50,29 +50,7 @@ def merge_images(
         output_path = os.path.join(input_folder, output_path)
 
     long_image.save(output_path, quality=95)
-    logger.info(f"\n🎉 拼接完成！长图已保存为: {output_path}")
-
-    # # 如果指定了归档文件夹，则移动原始图片和拼接后的图片到该文件夹
-    # if archive_folder:
-    #     if not os.path.exists(archive_folder):
-    #         os.makedirs(archive_folder)
-
-    #     # 移动原始图片
-    #     for filename in image_files:
-    #         source_path = os.path.join(input_folder, filename)
-    #         dest_path = os.path.join(archive_folder, filename)
-    #         shutil.move(source_path, dest_path)
-    #         logger.info(f"📁 原始图片已移动到: {dest_path}")
-
-    #     # 移动拼接后的图片
-    #     output_filename = os.path.basename(output_path)
-    #     final_output_path = os.path.join(archive_folder, output_filename)
-    #     shutil.move(output_path, final_output_path)
-    #     logger.info(f"📁 拼接图片已移动到: {final_output_path}")
-
-    #     return final_output_path
-
-    # return True
+    logger.info(f"🎉 拼接完成！长图已保存为: {output_path}")
 
 
 if __name__ == "__main__":
