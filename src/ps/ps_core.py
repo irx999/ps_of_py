@@ -159,10 +159,13 @@ class Photoshop:
         export_name_list = export_name.split("|")
         export_path = "/".join(export_name_list)
         try:
-            os.makedirs(self.export_folder + "/" + export_name_list[0], exist_ok=True)
-            logger.debug(
-                f"创建文件夹 {self.export_folder + '/' + export_name_list[0]} 成功"
-            )
+            if len(export_name_list) > 1:
+                os.makedirs(
+                    self.export_folder + "/" + export_name_list[0], exist_ok=True
+                )
+                logger.debug(
+                    f"创建文件夹 {self.export_folder + '/' + export_name_list[0]} 成功"
+                )
         except Exception as e:
             logger.error(f"创建文件夹 {self.export_folder} 失败: {e}")
         try:

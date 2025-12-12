@@ -4,6 +4,7 @@ import os
 import sys
 
 from load_data import LoadData
+from src.ps import merge_images
 from src.ps.ps_core import Photoshop
 
 if getattr(sys, "frozen", False):
@@ -34,7 +35,7 @@ def main():
         # 遍历整个字典
         with ps:
             for task in load_data.selected_skus():
-                print(task["内容"])
+                print(task["任务名"])
                 ps.core(task["任务名"], task["内容"])
 
             ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
@@ -45,24 +46,35 @@ def main():
 
 def main_for_merge_images():
     """主启动函数"""
-    try:
-        load_data = LoadData()
+    load_data = LoadData()
 
-        ps_settings = load_data.settings
+    ps_settings = load_data.settings
 
-        ps = Photoshop(*ps_settings)
+    ps = Photoshop(*ps_settings)
 
-        # 遍历整个字典
-        with ps:
-            # for merge_name in load_data.merge_names:
-            for task in load_data.selected_skus():
-                print(task["任务名"])
-                ps.core(task["任务名"], task["修改信息"])
+    # 遍历整个字典
+    with ps:
+        # for merge_name in load_data.merge_names:
 
-            # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
+        merge_dict = {}
+        for task in load_data.selected_skus():
+            merge_list = task["任务名"].split("|")
+            if len(merge_list) > 1:
+                if merge_list[0] not in merge_dict:
+                    merge_dict[merge_list[0]] = []
+                merge_dict[merge_list[0]].append(
+                    merge_list[1] + ps.suffix + "." + ps.file_format
+                )
 
-    except Exception as e:
-        print(f"程序执行出错: {e}")
+            ps.core(task["任务名"], task["修改信息"])
+
+        # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
+    print(merge_dict)
+
+    for merge_name, merge_list in merge_dict.items():
+        merge_images(ps.export_folder + "/" + merge_name, merge_list, "合并.png")
+
+    pass
 
 
 if __name__ == "__main__":
