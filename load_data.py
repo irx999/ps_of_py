@@ -129,6 +129,8 @@ class LoadData:
                             # 这里如果两个图层组需要操作两次的话, 就会在表格中重复, excel 会自动多一个复制处理
                             elif layer_list[-1] in [str(i) for i in range(1, 11)]:
                                 layer_info["图层路径"] = layer_list[:-1]
+                            elif layer_list[-1] == "":
+                                layer_info["图层路径"] = layer_list[0:1]
                             else:
                                 layer_info["图层路径"] = layer_list
                             # 匹配单元格内容
