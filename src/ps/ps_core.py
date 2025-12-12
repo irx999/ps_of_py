@@ -155,8 +155,18 @@ class Photoshop:
 
     def ps_saveas(self, export_name: str):
         """保存文件到指定路径"""
+
+        export_name_list = export_name.split("|")
+        export_path = "/".join(export_name_list)
         try:
-            path = f"{self.export_folder}/{export_name}{self.suffix}.{self.file_format}"
+            os.makedirs(self.export_folder + "/" + export_name_list[0], exist_ok=True)
+            logger.debug(
+                f"创建文件夹 {self.export_folder + '/' + export_name_list[0]} 成功"
+            )
+        except Exception as e:
+            logger.error(f"创建文件夹 {self.export_folder} 失败: {e}")
+        try:
+            path = f"{self.export_folder}/{export_path}{self.suffix}.{self.file_format}"
             self.doc.saveAs(
                 path,
                 self.saveoptions,

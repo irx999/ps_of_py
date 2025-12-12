@@ -56,14 +56,14 @@ def main_for_merge_images():
         with ps:
             # for merge_name in load_data.merge_names:
             for task in load_data.selected_skus():
-                print(task["内容"])
+                print(task["任务名"])
                 ps.core(task["任务名"], task["修改信息"])
 
-            ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
+            # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
 
     except Exception as e:
         print(f"程序执行出错: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    main_for_merge_images()
