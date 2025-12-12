@@ -11,7 +11,7 @@ def merge_images(
     input_folder,
     merge_image_list,
     output_path,
-    width=800,
+    width=750,
 ):
     """合并图片
 
