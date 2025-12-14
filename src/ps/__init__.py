@@ -1,4 +1,4 @@
-from .merge_images import merge_images
+from .images import Image_utils
 from .ps_core import Photoshop
 
-__all__ = ["Photoshop", "merge_images"]
+__all__ = ["Photoshop", "Image_utils"]

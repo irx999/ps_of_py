@@ -3,9 +3,8 @@
 import os
 import sys
 
-from load_data import LoadData
-from src.ps import merge_images
-from src.ps.ps_core import Photoshop
+from src.ps import Image_utils, Photoshop
+from src.ps.load_data import LoadData
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.dirname(sys.executable))
@@ -30,7 +29,10 @@ def main():
 
         ps_settings = load_data.settings
 
-        ps = Photoshop(*ps_settings)
+        print(**ps_settings)
+        print("------------------------------------------------------------------")
+
+        ps = Photoshop(**ps_settings)
 
         # 遍历整个字典
         with ps:
@@ -50,7 +52,7 @@ def main_for_merge_images():
 
     ps_settings = load_data.settings
 
-    ps = Photoshop(*ps_settings)
+    ps = Photoshop(**ps_settings)
 
     # 遍历整个字典
     with ps:
@@ -72,7 +74,11 @@ def main_for_merge_images():
     print(merge_dict)
 
     for merge_name, merge_list in merge_dict.items():
-        merge_images(ps.export_folder + "/" + merge_name, merge_list, "合并.png")
+        Image_utils.merge_images(
+            ps.export_folder + "/" + merge_name,
+            merge_list,
+            merge_name + "(1)." + ps_settings["file_format"],
+        )
 
     pass
 

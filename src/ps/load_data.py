@@ -35,7 +35,7 @@ class LoadData:
         except OSError as e:
             print(f"无法读取您的表格,请检查您的excel文件\n{e}")
 
-    def read_settings(self) -> List[Any]:
+    def read_settings(self) -> dict:
         """读取导出配置信息"""
         try:
             if self.sheet.range("colse_ps").value == "是":
@@ -46,17 +46,24 @@ class LoadData:
             colse_ps = True
 
         try:
-            settings: List[Any] = [
-                self.sheet.range("psd_name").value,
-                self.sheet.range("psd_file_path").value,
-                self.sheet.range("export_folder").value,
-                self.sheet.range("file_format").value,
-                self.sheet.range("suffix").value,
-                colse_ps,
-            ]
+            settings: dict = {
+                "psd_name": self.sheet.range("psd_name").value,
+                "psd_dir_path": self.sheet.range("psd_file_path").value,
+                "export_folder": self.sheet.range("export_folder").value,
+                "file_format": self.sheet.range("file_format").value,
+                "suffix": self.sheet.range("suffix").value,
+                "colse_ps": colse_ps,
+            }
         except ValueError as e:
             print(f"无法读取到表格中的配置信息,将使用默认配置\n{e}")
-            settings = [None, None, "导出图片", "png", False]
+            settings: dict = {
+                "psd_name": None,
+                "psd_file_path": None,
+                "export_folder": "默认名称",
+                "file_format": "png",
+                "suffix": "",
+                "colse_ps": False,
+            }
         return settings
 
     def read_range(self) -> List[Dict[str, Any]]:
