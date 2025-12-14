@@ -14,8 +14,6 @@ if getattr(sys, "frozen", False):
     main_working_dir = os.path.dirname(sys.executable)
     sys.path.append(main_working_dir)
     os.chdir(main_working_dir)
-
-
 else:
     main__working_dir = os.path.dirname(__file__)
     sys.path.append(main__working_dir)

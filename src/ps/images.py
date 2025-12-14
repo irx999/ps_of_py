@@ -4,7 +4,7 @@ import os
 from loguru import logger
 from PIL import Image
 
-logger.add("./logs/Merge_images.log", rotation="1 MB")
+logger.add("./logs/Image_utils.log", rotation="1 MB")
 
 
 class Image_utils:
@@ -38,10 +38,12 @@ class Image_utils:
             try:
                 img = Image.open(img_path).convert("RGB")
                 if img.size != (image_width, image_height):
+                    img = img.resize(
+                        (image_width, image_height), Image.Resampling.LANCZOS
+                    )
                     logger.info(
                         f"⚠️ 警告：{filename} 尺寸不是 {image_width}x{image_width}，已自动调整。"
                     )
-                    img = img.resize((image_width, image_height), Image.LANCZOS)  # type: ignore
                 long_image.paste(img, (0, i * image_height))
             except Exception as e:
                 logger.info(f"❌ 跳过无效图片 {filename}: {e}")
@@ -51,8 +53,5 @@ class Image_utils:
         else:
             output_path = os.path.join(input_folder, output_path)
 
-        long_image.save(output_path, quality=95)
+        long_image.save(output_path, quality=100)
         logger.info(f"🎉 拼接完成！长图已保存为: {output_path}")
-
-    if __name__ == "__main__":
-        pass
