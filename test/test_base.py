@@ -2,7 +2,7 @@ import os
 import unittest
 from pprint import pprint
 
-from src.ps import Photoshop
+from src.ps_of_py import Photoshop
 
 
 class TestBaseModule(unittest.TestCase):

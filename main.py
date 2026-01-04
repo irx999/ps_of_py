@@ -3,8 +3,8 @@
 import os
 import sys
 
-from src.ps import Image_utils, Photoshop
-from src.ps.load_data import LoadData
+from src.ps_of_py import Image_utils, Photoshop
+from src.ps_of_py.load_data import LoadData
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.dirname(sys.executable))
