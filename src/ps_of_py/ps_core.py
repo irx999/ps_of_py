@@ -7,8 +7,8 @@ from loguru import logger
 from photoshop import Session
 from photoshop.api import Application
 
-from .ps_layer_factory import LayerFactory
-from .ps_utils import ExportOptionsFactory
+from plugins.ps_of_py.src.ps_of_py.ps_layer_factory import LayerFactory
+from plugins.ps_of_py.src.ps_of_py.ps_utils import ExportOptionsFactory
 
 logger.add("./logs/Photoshop.log", rotation="1 MB")
 
@@ -24,6 +24,7 @@ class Photoshop:
         file_format: str = "png",
         suffix: str = "",
         colse_ps: bool = False,
+        **kwargs,
     ):
         """
         初始化Photoshop类
