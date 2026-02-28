@@ -34,6 +34,8 @@ class LoadData:
             self.settings = self.read_settings()
         except OSError as e:
             print(f"无法读取您的表格,请检查您的excel文件\n{e}")
+        except Exception:
+            raise FileNotFoundError("当前未选中工作簿或不存在")
 
     def read_settings(self) -> dict:
         """读取导出配置信息"""

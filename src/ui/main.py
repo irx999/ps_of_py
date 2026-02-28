@@ -35,6 +35,9 @@ def load_ps_settings():
             need_merge_suffix = c2[3].text_input(
                 "合并后缀", key="need_merge_suffix", value="(1)"
             )
+            need_merge_width = c2[3].number_input(
+                "合并宽度", key="need_merge_width", value=750, step=10
+            )
         settings: dict = {
             "psd_name": psd_name_path.name,
             "psd_dir_path": psd_name_path.parent._str,
@@ -44,6 +47,7 @@ def load_ps_settings():
             "colse_ps": close_ps if close_ps else False,
             "need_merge": need_merge if need_merge else False,
             "need_merge_suffix": need_merge_suffix if need_merge else "",
+            "need_merge_width": need_merge_width if need_merge else 750,
         }
     return settings
 
@@ -103,6 +107,7 @@ def show():
                                 + ps_settings["need_merge_suffix"]
                                 + "."
                                 + ps_settings["file_format"],
+                                width=ps_settings["need_merge_width"],
                             )
                             st.info(
                                 "合并成功: "
