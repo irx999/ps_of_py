@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import streamlit as st
 from streamlit import session_state as ss
@@ -6,7 +7,7 @@ from streamlit import session_state as ss
 from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 
-if ss.get("ps_of_py_logs", []) is None:
+if ss.get("ps_of_py_logs", "空") == "空":
     ss.ps_of_py_logs = []
 
 
@@ -100,7 +101,7 @@ def run_ps(ps_settings: dict, load_data):
         with st.spinner("执行合并任务中", show_time=True):
             for merge_name, merge_list in merge_dict.items():
                 try:
-                    Image_utils.merge_images(
+                    merged_output_path = Image_utils.merge_images(
                         ps.export_folder + "/" + merge_name,
                         merge_list,
                         merge_name
@@ -116,6 +117,18 @@ def run_ps(ps_settings: dict, load_data):
                         + merge_name
                         + ps_settings["need_merge_suffix"]
                     )
+
+                    # 将merge_list 和 merged_output_path中的文件全部复制到一个 综合的文件夹中去
+                    汇总_文件夹 = ps.export_folder + "/" + "汇总" + "/"
+                    if not os.path.exists(汇总_文件夹):
+                        os.makedirs(汇总_文件夹)
+                    for file in merge_list:
+                        input_folder = ps.export_folder + "/" + merge_name
+
+                        shutil.copy2(os.path.join(input_folder, file), 汇总_文件夹)
+
+                    shutil.copy2(merged_output_path, 汇总_文件夹)
+
                 except Exception as e:
                     st.error(e)
 

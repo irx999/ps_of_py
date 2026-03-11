@@ -55,3 +55,4 @@ class Image_utils:
 
         long_image.save(output_path, quality=100)
         logger.info(f"拼接完成！长图已保存为: {output_path}")
+        return output_path
