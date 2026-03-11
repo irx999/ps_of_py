@@ -121,6 +121,11 @@ with Photoshop("product_template.psd") as ps:
 # 🧠  更改日志 / CHANGE_LOGS
 
 
+> ## [0.3.2] - 2026-03-11
+> 
+> 【🎉新增】
+> - 合并文件夹中会 创建一个汇总文件夹 来收集所有创建的文件
+
 
 
 
