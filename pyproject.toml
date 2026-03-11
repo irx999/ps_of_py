@@ -1,6 +1,6 @@
 [project]
 name = "ps-of-py"
-version = "0.3.0"
+version = "0.3.1"
 description = "This is a  Python  for Photoshop."
 readme = "README.md"
 requires-python = "==3.14.*"

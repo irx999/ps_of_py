@@ -6,6 +6,9 @@ from streamlit import session_state as ss
 from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 
+if ss.get("ps_of_py_logs", []) is None:
+    ss.ps_of_py_logs = []
+
 
 def load_ps_settings():
     with st.expander("⚙️ PSD文件配置", expanded=True):
@@ -87,7 +90,7 @@ def run_ps(ps_settings: dict, load_data):
                     )
 
                 ps.core(task["任务名"], task["修改信息"])
-                st.info(
+                ss["ps_of_py_logs"].append(
                     "保存成功: " + ps.export_folder + "/" + merge_list[0] + ps.suffix
                 )
 
@@ -106,7 +109,7 @@ def run_ps(ps_settings: dict, load_data):
                         + ps_settings["file_format"],
                         width=ps_settings["need_merge_width"],
                     )
-                    st.info(
+                    ss["ps_of_py_logs"].append(
                         "合并成功: "
                         + ps.export_folder
                         + "/"
@@ -120,18 +123,34 @@ def run_ps(ps_settings: dict, load_data):
 
 
 def show():
-    st.set_page_config(page_title="Photoshop自动化工具", layout="wide")
-    st.header("📸 Photoshop自动化工具")
+    st.set_page_config(page_title="🎨ps_of_py自动化工具", layout="wide")
+
+    header = st.columns([3, 1, 1], vertical_alignment="bottom")
+    header[0].header("🎨ps_of_py自动化工具")
 
     ps_settings = ss.get("ps_settings", load_ps_settings())
 
+    if header[1].button("一键启动", icon="🚀"):
+        with st.spinner("处理中...", show_time=True):
+            try:
+                run_ps(ps_settings, load_data=LoadData())
+            except FileNotFoundError as e:
+                st.toast(e, icon="❌")
+            except Exception as e:
+                st.toast(e, icon="❌")
+
+    @st.dialog("ps_of_py_logs 查看", icon="📝")
+    def 日志():
+        for i in ss.get("ps_of_py_logs", []):
+            st.text(i)
+
+    if header[2].button("查看日志", icon="📝"):
+        日志()
     # 主界面
     tab1, tab2, tab3 = st.tabs(["📊 Excel表格加载", "🎨 psd信息加载", "🖼️ None"])
 
     with tab1:
-        if st.button("一键启动"):
-            with st.spinner("处理中...", show_time=True):
-                run_ps(ps_settings, load_data=LoadData())
+        pass
 
     with tab2:
         st.write(ss.get("psd_info", {}))

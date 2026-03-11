@@ -130,6 +130,13 @@ class LoadData:
                                     layer_info["textItem"]["contents"] = row_dict[
                                         header
                                     ]
+                            # 修复数据错误, 这里统一转化成str 格式 并移除 .0 并且这个.0 必须是结尾
+
+                            text_content = str(layer_info["textItem"]["contents"])
+                            if text_content.endswith(".0"):
+                                layer_info["textItem"]["contents"] = text_content[:-2]
+                            else:
+                                layer_info["textItem"]["contents"] = text_content
 
                         # 匹配表头中修改可显性图层属性
                         case ["可显性", *layer_list]:
