@@ -7,7 +7,7 @@ from photoshop import Session
 from photoshop.api._artlayer import ArtLayer
 from photoshop.api._layerSet import LayerSet
 
-from .ps_utils import ColorFactory
+from plugins.ps_of_py.src.ps_of_py.ps_utils import ColorFactory
 
 logger.add("./logs/LayerFactory.log", rotation="1 MB")
 
@@ -57,15 +57,36 @@ class LayerFactory:
         copy_name = f"{final_name} 拷贝"
         change_layer_list = []
 
-        # 根路径
+        # 获取根节点
         root_path = self.ps_session.active_document
-        # 循环找到最后一个节点
+        current_layer = root_path
+
+        # 循环找到最后一个节点的【父节点】
+        # layer_path[:-1] 确保我们不包含最后一个目标节点，只走到它的上一层
         for layer_item in layer_path[:-1]:
             try:
-                current_layer = root_path.layerSets.getByName(layer_item)
+                # 【关键修改】从 current_layer (当前节点) 的子集中查找，而不是永远从 root_path 查找
+                # 注意：这里假设 layerSets 是当前节点的一个属性。如果是方法调用，请调整为 current_layer.getLayerSet(layer_item)
+                next_layer = current_layer.layerSets.getByName(layer_item)
+
+                # 更新 current_layer，以便下一次循环在这个新节点下继续查找
+                current_layer = next_layer
+
             except Exception:
-                logger.error(f"未找到图层集 '{layer_item}' 在路径 {layer_path}")
+                logger.error(f"未找到图层集 '{layer_item}'，路径中断于 {layer_path}")
+                # 此时 current_layer 停留在最后成功找到的节点，或者仍是根节点
+                # current_layer = None  # 可选：明确标记查找失败
                 break
+
+            # 循环结束后：
+            # 如果成功：current_layer 指向的是目标节点的【父节点】
+            # 如果失败：current_layer 为 None 或停留在中途
+            if current_layer:
+                # 在这里你可以基于 current_layer (父节点) 去创建或操作最后一个节点
+                target_name = layer_path[-1]
+                logger.info(f"成功定位到父节点，准备操作目标：{target_name}")
+            else:
+                logger.warning("路径无效，无法进行操作")
         else:
             layerSets_list = [layerSet.name for layerSet in current_layer.layerSets]
             artLayers_list = [artLayer.name for artLayer in current_layer.artLayers]
