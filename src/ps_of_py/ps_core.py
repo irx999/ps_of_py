@@ -254,9 +254,8 @@ class Photoshop:
 
             # 3. 判断是否需要真正修改
             if current_state != change_state:
-                logger.info(
-                    f"图层 {layer_name} 状态不一致需要修改\n修改前: {current_state}\n修改后: {change_state}"
-                )
+                logger.info(f"图层 {layer_name} 状态不一致需要修改")
+                logger.info(f"图层 {layer_name}:  {current_state} --> {change_state}")
                 # 4. 执行修改
                 self.layer_factory.change_layer_state(layer_name, change_state)
             else:

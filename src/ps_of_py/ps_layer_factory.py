@@ -83,8 +83,8 @@ class LayerFactory:
             # 如果失败：current_layer 为 None 或停留在中途
             if current_layer:
                 # 在这里你可以基于 current_layer (父节点) 去创建或操作最后一个节点
-                target_name = layer_path[-1]
-                logger.info(f"成功定位到父节点，准备操作目标：{target_name}")
+                target_name = layer_path[layer_path.index(layer_item) + 1]
+                logger.debug(f"成功定位到{layer_item}，准备操作目标：{target_name}")
             else:
                 logger.warning("路径无效，无法进行操作")
         else:

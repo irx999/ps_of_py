@@ -4,6 +4,9 @@ from itertools import zip_longest
 from typing import Any, Dict, List
 
 import xlwings as xw
+from loguru import logger
+
+logger.add("./logs/load_data.log", rotation="1 MB")
 
 
 class LoadData:
@@ -31,9 +34,12 @@ class LoadData:
                 self.sheet.api.Application.Selection.Value
             )
             # 读取表格中写入的导出配置信息
-            self.settings = self.read_settings()
+            try:
+                self.settings = self.read_settings()
+            except Exception:
+                logger.debug("无法读取表格中的配置信息,请检查您的excel文件")
         except OSError as e:
-            print(f"无法读取您的表格,请检查您的excel文件\n{e}")
+            logger.error(f"无法读取您的表格,请检查您的excel文件{e}")
         except Exception:
             raise FileNotFoundError("当前未选中工作簿或不存在")
 
@@ -176,6 +182,7 @@ class LoadData:
                         full_path = "/".join(layer_info["图层路径"])
                         del layer_info["图层路径"]
                         layer_dict["修改信息"][full_path] = layer_info
+            # assert row_dict.get("导出文件名") is not None, "表格中缺少'导出文件名'"
             result_dict[row_dict["导出文件名"]] = layer_dict
         return result_dict
 

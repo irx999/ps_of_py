@@ -163,7 +163,9 @@ def show():
     tab1, tab2, tab3 = st.tabs(["📊 Excel表格加载", "🎨 psd信息加载", "🖼️ None"])
 
     with tab1:
-        pass
+        if st.button("加载Excel表格"):
+            load_data = LoadData()
+            st.write(load_data.selected_skus())
 
     with tab2:
         st.write(ss.get("psd_info", {}))
