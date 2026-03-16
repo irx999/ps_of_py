@@ -7,8 +7,8 @@ from loguru import logger
 from photoshop import Session
 from photoshop.api import Application
 
-from plugins.ps_of_py.src.ps_of_py.ps_layer_factory import LayerFactory
-from plugins.ps_of_py.src.ps_of_py.ps_utils import ExportOptionsFactory
+from .ps_layer_factory import LayerFactory
+from .ps_utils import ExportOptionsFactory
 
 logger.add("./logs/Photoshop.log", rotation="1 MB")
 

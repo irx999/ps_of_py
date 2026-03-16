@@ -16,7 +16,11 @@ def load_ps_settings():
         # PSD文件配置
         c1 = st.columns([1, 1, 1.5])
         with c1[0]:
-            psd_name_path = st_file_picker("选择PSD文件", button_icon="📄")
+            psd_name_path = st_file_picker(
+                "选择PSD文件",
+                button_icon="📄",
+                filetypes=[("psd files", "*.psd"), ("psd files", "*.psb")],
+            )
         with c1[1]:
             if st.button("获取psd信息", icon="📄"):
                 with c1[2].spinner("处理中...", show_time=True):

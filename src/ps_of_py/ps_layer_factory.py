@@ -7,9 +7,9 @@ from photoshop import Session
 from photoshop.api._artlayer import ArtLayer
 from photoshop.api._layerSet import LayerSet
 
-from plugins.ps_of_py.src.ps_of_py.ps_utils import ColorFactory
+from .ps_utils import ColorFactory
 
-logger.add("./logs/LayerFactory.log", rotation="1 MB")
+logger.add("./logs/Photoshop.log", rotation="1 MB")
 
 
 class LayerFactory:
