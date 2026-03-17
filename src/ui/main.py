@@ -6,13 +6,16 @@ from streamlit import session_state as ss
 
 from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
+from src.utils.config_manager import ConfigManager
 
 if ss.get("ps_of_py_logs", "空") == "空":
     ss.ps_of_py_logs = []
 
+ps_of_py_config = ConfigManager("config.json", "ps_of_py_config")
+
 
 def load_ps_settings():
-    with st.expander("⚙️ PSD文件配置", expanded=True):
+    with st.expander("PSD文件配置", expanded=True, icon="⚙️"):
         # PSD文件配置
         c1 = st.columns([1, 1, 1.5])
         with c1[0]:
@@ -20,7 +23,11 @@ def load_ps_settings():
                 "选择PSD文件",
                 button_icon="📄",
                 filetypes=[("psd files", "*.psd"), ("psd files", "*.psb")],
+                default=os.path.join(
+                    ps_of_py_config.get("psd_dir_path"), ps_of_py_config.get("psd_name")
+                ),
             )
+
         with c1[1]:
             if st.button("获取psd信息", icon="📄"):
                 with c1[2].spinner("处理中...", show_time=True):
@@ -33,10 +40,14 @@ def load_ps_settings():
                         st.error(e)
         st.badge(str(psd_name_path), icon="📄")
 
-    with st.expander("⚙️ 导出配置", expanded=True):
+    with st.expander("导出配置", expanded=True, icon="⚙️"):
         c1 = st.columns([1, 1, 1.5])
         with c1[0]:
-            export_folder = st_folder_picker("设置导出文件夹", button_icon="📁")
+            export_folder = st_folder_picker(
+                "设置导出文件夹",
+                button_icon="📁",
+                default=ps_of_py_config.get("export_folder"),
+            )
 
         with c1[1]:
             if st.button("打开导出文件夹", icon="📂"):
@@ -44,7 +55,10 @@ def load_ps_settings():
         st.badge(str(export_folder), icon="📁")
         c2 = st.columns(3)
         file_format = c2[0].segmented_control(
-            "导出格式", ["png", "jpg"], key="file_format", default="png"
+            "导出格式",
+            ["png", "jpg"],
+            key="file_format",
+            default=ps_of_py_config.get("file_format", "png"),
         )
         close_ps = c2[1].segmented_control(
             "完成后关闭PSD", options=[True, False], key="close_ps", default=True
@@ -53,15 +67,20 @@ def load_ps_settings():
             "同文件夹是否合并",
             options=[True, False],
             key="need_merge",
-            default=True,
+            default=ps_of_py_config.get("need_merge", True),
         )
         c3 = st.columns([1, 1, 1])
         suffix = c3[0].text_input("文件名后缀", "", key="suffix", icon="📄")
         need_merge_suffix = c3[1].text_input(
-            "合并后缀", key="need_merge_suffix", value="(1)"
+            "合并后缀",
+            key="need_merge_suffix",
+            value=ps_of_py_config.get("need_merge_suffix", "(1)"),
         )
         need_merge_width = c3[2].number_input(
-            "合并宽度", key="need_merge_width", value=750, step=10
+            "合并宽度",
+            key="need_merge_width",
+            value=ps_of_py_config.get("need_merge_width", 750),
+            step=10,
         )
         settings: dict = {
             "psd_name": psd_name_path.name,
@@ -71,10 +90,10 @@ def load_ps_settings():
             "suffix": suffix,
             "colse_ps": close_ps if close_ps else False,
             "need_merge": need_merge if need_merge else False,
-            "need_merge_suffix": need_merge_suffix if need_merge else "",
-            "need_merge_width": need_merge_width if need_merge else 750,
+            "need_merge_suffix": need_merge_suffix,
+            "need_merge_width": need_merge_width,
         }
-
+    ps_of_py_config.update(settings)
     ss["ps_settings"] = settings
 
 
