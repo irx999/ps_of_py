@@ -1,18 +1,8 @@
-import os
-import sys
-
 from src.ui.utils import st_markdown
+from src.utils import get_resource_path
 
 if __name__ == "__main__":
-    possible_paths = [
-        "plugins/ps_of_py/CHANGELOG.md",
-        f"{sys._MEIPASS}/plugins/ps_of_py/CHANGELOG.md",  # # type: ignore
-    ]
-
-    for path in possible_paths:
-        if os.path.exists(path):
-            FILE_PATH = path
-            break
+    FILE_PATH = get_resource_path("plugins/ps_of_py/CHANGELOG.md")
 
     with open(FILE_PATH, "r", encoding="utf-8") as f:
         readme_text = f.read()

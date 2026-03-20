@@ -2,16 +2,16 @@ import os
 import shutil
 
 import streamlit as st
+from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from streamlit import session_state as ss
 
-from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 from src.utils.config_manager import ConfigManager
 
 if ss.get("ps_of_py_logs", "空") == "空":
     ss.ps_of_py_logs = []
 
-ps_of_py_config = ConfigManager("config.json", "ps_of_py_config")
+ps_of_py_config = ConfigManager("assets/config.json", "ps_of_py_config")
 
 
 def load_ps_settings():
@@ -24,7 +24,8 @@ def load_ps_settings():
                 button_icon="📄",
                 filetypes=[("psd files", "*.psd"), ("psd files", "*.psb")],
                 default=os.path.join(
-                    ps_of_py_config.get("psd_dir_path"), ps_of_py_config.get("psd_name")
+                    ps_of_py_config.get("psd_dir_path", os.getcwd()),
+                    ps_of_py_config.get("psd_name", ""),
                 ),
             )
 
@@ -46,7 +47,7 @@ def load_ps_settings():
             export_folder = st_folder_picker(
                 "设置导出文件夹",
                 button_icon="📁",
-                default=ps_of_py_config.get("export_folder"),
+                default=ps_of_py_config.get("export_folder", os.getcwd()),
             )
 
         with c1[1]:
@@ -61,7 +62,7 @@ def load_ps_settings():
             default=ps_of_py_config.get("file_format", "png"),
         )
         close_ps = c2[1].segmented_control(
-            "完成后关闭PSD", options=[True, False], key="close_ps", default=True
+            "完成后关闭PSD", options=[True, False], key="close_ps", default=False
         )
         need_merge = c2[2].segmented_control(
             "同文件夹是否合并",
