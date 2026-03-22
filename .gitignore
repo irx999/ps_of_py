@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+*.log
+.streamlit/config.yaml
+*test_export
+*.png
+*.jpg
+*.jpeg
+*~*
+*coverage*
