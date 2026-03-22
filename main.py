@@ -3,8 +3,8 @@
 import os
 import sys
 
-from src.ps import Image_utils, Photoshop
-from src.ps.load_data import LoadData
+from src.ps_of_py import Image_utils, Photoshop
+from src.ps_of_py.load_data import LoadData
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.dirname(sys.executable))
@@ -14,8 +14,6 @@ if getattr(sys, "frozen", False):
     main_working_dir = os.path.dirname(sys.executable)
     sys.path.append(main_working_dir)
     os.chdir(main_working_dir)
-
-
 else:
     main__working_dir = os.path.dirname(__file__)
     sys.path.append(main__working_dir)

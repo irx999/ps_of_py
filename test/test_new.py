@@ -2,7 +2,7 @@ import unittest
 
 from photoshop.api.enumerations import AnchorPosition
 
-from src.ps import Photoshop
+from src.ps_of_py import Photoshop
 
 
 class TestNewModule(unittest.TestCase):
