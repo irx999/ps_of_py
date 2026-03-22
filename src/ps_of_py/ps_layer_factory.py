@@ -9,7 +9,7 @@ from photoshop.api._layerSet import LayerSet
 
 from .ps_utils import ColorFactory
 
-logger.add("./logs/Photoshop.log", rotation="1 MB")
+logger.add("./logs/ps_of_py/LayerFactory.log", rotation="1 MB")
 
 
 class LayerFactory:

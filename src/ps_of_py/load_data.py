@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 import xlwings as xw
 from loguru import logger
 
-logger.add("./logs/LoadData.log", rotation="1 MB")
+logger.add("./logs/ps_of_py/LoadData.log", rotation="1 MB")
 
 
 class LoadData:

@@ -10,7 +10,7 @@ from photoshop.api import Application
 from .ps_layer_factory import LayerFactory
 from .ps_utils import ExportOptionsFactory
 
-logger.add("./logs/Photoshop.log", rotation="1 MB")
+logger.add("./logs/ps_of_py/Photoshop.log", rotation="1 MB")
 
 
 class Photoshop:
@@ -94,10 +94,10 @@ class Photoshop:
         """
         base_path = os.path.abspath(self.psd_dir_path)  # 统一处理为绝对路径
         file_path = os.path.join(base_path, self.psd_name)
-        
+
         if os.path.isfile(file_path):
             return file_path
-        
+
         raise FileNotFoundError(f"找不到PSD文件: {file_path}")
 
     def _create_export_folder_1(self, export_folder: str) -> str:
@@ -169,9 +169,9 @@ class Photoshop:
                 self.saveoptions,
                 asCopy=True,
             )
-            logger.info(f"导出{path}成功")
+            logger.info(f"导出{path} 成功")
         except Exception as e:
-            logger.error(f"导出{path}失败")
+            logger.error(f"导出{path} 失败")
             raise Exception(f"保存文件到指定路径失败: {e}")
 
     def core(self, export_name: str, input_data: dict):

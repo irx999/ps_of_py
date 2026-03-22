@@ -4,7 +4,7 @@ import os
 from loguru import logger
 from PIL import Image
 
-logger.add("./logs/Image_utils.log", rotation="1 MB")
+logger.add("./logs/ps_of_py/Image_utils.log", rotation="1 MB")
 
 
 class Image_utils:

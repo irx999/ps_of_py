@@ -5,14 +5,27 @@
 
 > ## [0.3.7] - 2026-03-22 # 最新
 > 
-> 【✨优化】
+> 【🎉新增】
 > - 支持参数验证
-
-
+> - 支持多格式图片导出
+```
+    "jpg": JPEGSaveOptions,
+    "jpeg": JPEGSaveOptions,
+    "png": PNGSaveOptions,
+    "gif": GIFSaveOptions,
+    "bmp": BMPSaveOptions,
+    "eps": EPSSaveOptions,
+    "pdf": PDFSaveOptions,
+    "psd": PhotoshopSaveOptions,
+    "tga": TargaSaveOptions,
+    "tiff": TiffSaveOptions,
+```
+> 【✨优化】
+> - logs 日志归类到 对应的文件夹下面好区分
 
 > ## [0.3.6] - 2026-03-17 
 > 
-> 【✨优化】
+> 【🎉新增】
 > - 支持参数持久化
 
 
