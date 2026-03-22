@@ -86,26 +86,19 @@ class Photoshop:
             logger.error(f"初始化Photoshop会话失败: {e}")
             raise Exception(f"初始化Photoshop会话失败: {e}")
 
-    def _get_psd_file_path(self) -> str | None:
+    def _get_psd_file_path(self) -> str:
         """
         获取PSD文件路径
 
         :return: PSD文件完整路径
         """
-        try:
-            # 如果传入的是绝对路径
-            if not os.path.isabs(self.psd_dir_path):
-                base_path = os.path.join(os.getcwd(), self.psd_dir_path)
-            else:
-                base_path = self.psd_dir_path
-            file_path = os.path.join(base_path, f"{self.psd_name}")
-            if os.path.isfile(file_path):
-                return file_path
-            raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
-
-        except Exception as e:
-            logger.error(f"获取PSD文件路径失败: {e}")
-            raise FileNotFoundError(f"找不到PSD文件: {self.psd_name}")
+        base_path = os.path.abspath(self.psd_dir_path)  # 统一处理为绝对路径
+        file_path = os.path.join(base_path, self.psd_name)
+        
+        if os.path.isfile(file_path):
+            return file_path
+        
+        raise FileNotFoundError(f"找不到PSD文件: {file_path}")
 
     def _create_export_folder_1(self, export_folder: str) -> str:
         """

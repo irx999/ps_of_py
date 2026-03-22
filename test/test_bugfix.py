@@ -7,9 +7,10 @@ class TestBUGFIXModule(unittest.TestCase):
     def setUp(self):
         pass
         self.ps = Photoshop(
-            psd_name="测试",
-            export_folder="./test_export",
-            colse_ps=True,
+            psd_name="bugfix.psd",
+            psd_dir_path="test/test_file/",
+            export_folder="test/test_export",
+            colse_ps=False,
         )
         print("\n")
 

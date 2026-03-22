@@ -18,7 +18,7 @@
 
 
 # 🌟 官方文档 / OFFICIAL_DOCUMENTATION
-[photoshop_python_api](https://photoshop-python-api.readthedocs.io/en/master/index.html)
+[photoshop-python-api](https://photoshop-python-api.readthedocs.io/en/master/index.html)
 
 # 🌟 特别功能 /  Special Features
 
@@ -29,6 +29,22 @@
 >>> 支持图层移动和旋转
 >>>> 支持嵌套图层集操作
 >>>>> 支持导出多种格式文件
+
+# 🌟 支持的图层操作属性
+
+## 通用属性
+- **visible**: 控制图层或图层组的可见性 (`true`/`false`)
+
+## 文本图层属性 (textItem)
+- **contents**: 修改文本内容 (字符串类型)
+- **size**: 修改字体大小 (整数类型)
+- **color**: 修改字体颜色 (支持十六进制格式如 `#FF0000`)
+- **font**: 修改字体类型 (字符串类型)
+- **strikeThru**: 设置删除线样式 (数值 0, 1, 2, 3)
+
+## 位置与变换属性
+- **move**: 移动图层位置 (坐标元组 `(x, y)`)
+- **rotate**: 旋转图层 (角度值)
 
 # ✅  代办事项 / Todolist
 - [x] 核心功能实现
@@ -62,7 +78,7 @@
 
 ### 基础使用
 ```python
-from src.ps.ps_core import Photoshop
+from src.ps_of_py import Photoshop
 
 # 初始化Photoshop实例
 with Photoshop("example.psd") as ps:
@@ -73,8 +89,10 @@ with Photoshop("example.psd") as ps:
             "textItem": {
                 "contents": "新文本内容",
                 "size": 24,
-                "color": "#FF0000"
-            }
+                "color": "#FF0000",
+                "font": "Arial",
+                "strikeThru": 0
+            },
             "move": (250, 250),
             "rotate": -180,
         }
@@ -85,13 +103,17 @@ with Photoshop("example.psd") as ps:
 
 ### 批量处理多个配置
 ```python
-from src.ps.ps_core import Photoshop
+from src.ps_of_py import Photoshop
 
 configs = {
     "version1": {
         "标题/标题1": {
+            "visible": True,
             "textItem": {
                 "contents": "version1",
+                "size": 24,
+                "color": "#FF0000",
+                "strikeThru": 0
             },
         },
         "图片/图片1": {
@@ -105,6 +127,7 @@ configs = {
                 "contents": "version2",
                 "size": 50,
                 "color": "#086D7A",
+                "strikeThru": 0
             },
         },
         "图片/图片1": {
@@ -124,4 +147,3 @@ with Photoshop("product_template.psd") as ps:
 
 - 感谢Adobe Photoshop Python API项目
 - 感谢所有开源组件的支持
-
