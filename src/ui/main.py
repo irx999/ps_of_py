@@ -2,9 +2,9 @@ import os
 import shutil
 
 import streamlit as st
-from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from streamlit import session_state as ss
 
+from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 from src.utils.config_manager import ConfigManager
 
@@ -62,13 +62,17 @@ def load_ps_settings():
             default=ps_of_py_config.get("file_format", "png"),
         )
         close_ps = c2[1].segmented_control(
-            "完成后关闭PSD", options=[True, False], key="close_ps", default=False
+            "完成后关闭PSD",
+            options=[True, False],
+            key="close_ps",
+            default=ps_of_py_config.get("colse_ps", "png"),
         )
         need_merge = c2[2].segmented_control(
             "同文件夹是否合并",
             options=[True, False],
             key="need_merge",
             default=ps_of_py_config.get("need_merge", True),
+            selection_mode="single",
         )
         c3 = st.columns([1, 1, 1])
         suffix = c3[0].text_input("文件名后缀", "", key="suffix", icon="📄")
