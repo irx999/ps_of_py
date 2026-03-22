@@ -192,8 +192,12 @@ def show():
 
     with tab1:
         if st.button("加载Excel表格"):
-            load_data = LoadData()
-            st.write(load_data.selected_skus())
+            try:
+                load_data = LoadData()
+                st.write(load_data.selected_skus())
+
+            except Exception as e:
+                st.toast(e, icon="❌")
 
     with tab2:
         st.write(ss.get("psd_info", {}))

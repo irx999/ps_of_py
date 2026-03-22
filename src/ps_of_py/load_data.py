@@ -102,6 +102,7 @@ class LoadData:
                     layer_info = {}
                     # 匹配标题属性
                     header_parts = header.split("|")
+
                     match header_parts:
                         # 匹配修改文本图层属性
                         case ["文本", *layer_list]:
@@ -109,6 +110,8 @@ class LoadData:
 
                             layer_info["textItem"] = {}
                             cell_value_parts = str(row_dict[header]).split("|")
+                            # 验证文本属性
+                            validate_cell_value_parts(row_dict[header])
                             match cell_value_parts:
                                 case [
                                     str(text),
@@ -188,7 +191,6 @@ class LoadData:
 
     def selected_skus(self) -> List[Dict[str, Any]]:
         """返回选中的SKUs"""
-        processed_data = self.filter_data(self.read_range())
         result: List[Dict[str, Any]] = []
         # 如果没有选择SKU, 则返回空列表
         if self.selected_ranges:
@@ -196,6 +198,8 @@ class LoadData:
                 sku_list = [i[0] for i in self.selected_ranges if i is not None]
             else:
                 sku_list = [self.selected_ranges]
+
+            processed_data = self.filter_data(self.read_range())
             for filename, content in processed_data.items():
                 if filename in sku_list:
                     result.append(
@@ -206,6 +210,82 @@ class LoadData:
                         }
                     )
         return result
+
+
+def validate_cell_value_parts(input_str: list):
+    """
+    验证分割后的header_parts参数
+    - 第一个参数：随意（不验证）
+    - 第二个参数：必须可转换为数字类型
+    - 第三个参数：必须是颜色值且只能是1、2、3中的一个
+    """
+    validated_params = []
+
+    cell_value_parts = str(input_str).split("|")
+
+    # 第一个参数：随意，无需验证
+    if len(cell_value_parts) > 0:
+        validated_params.append(cell_value_parts[0])
+
+    # 第二个参数：如果存在，必须可转换为数字类型
+    if len(cell_value_parts) > 1:
+        try:
+            second_param = int(cell_value_parts[1])
+            validated_params.append(second_param)
+        except (ValueError, TypeError):
+            raise ValueError(
+                f"{input_str}中字体大小参数 '{cell_value_parts[1]}' 无法转换为数字类型"
+            )
+    else:
+        validated_params.append(None)  # 或者不添加，取决于您的需求
+
+    # 第三个参数：如果存在，必须是颜色值且只能是1、2、3中的一个
+    if len(cell_value_parts) > 2:
+        color_value = str(cell_value_parts[2])
+        if not is_valid_hex_color(color_value):
+            raise ValueError(
+                f"{input_str}中颜色参数 '{color_value}' 不是有效的十六进制颜色值"
+            )
+        validated_params.append(color_value)  # 统一转为大写
+    else:
+        validated_params.append(None)
+
+    # 第四个参数：如果存在，必须是1、2、3这三个中的一种
+    if len(cell_value_parts) > 3:
+        try:
+            fourth_param = int(cell_value_parts[3])
+            if fourth_param not in [0, 1, 2, 3]:
+                raise ValueError(
+                    f"{input_str}中删除线参数 '{fourth_param}' 不是0123中的任意一个"
+                )
+            validated_params.append(fourth_param)
+        except (ValueError, TypeError):
+            raise ValueError(
+                f"{input_str}中第四个参数 '{cell_value_parts[3]}' 无法转换为数字类型或不在允许范围内"
+            )
+    else:
+        validated_params.append(None)
+
+    return validated_params
+
+
+def is_valid_hex_color(color_string: str) -> bool:
+    """
+    验证是否为有效的十六进制颜色值
+    支持格式：#RGB, #RRGGBB, RGB, RRGGBB
+    """
+    import re
+
+    # 移除可能的空白字符
+    color_string = color_string.strip()
+
+    # 添加 # 前缀如果不存在
+    if not color_string.startswith("#"):
+        color_string = "#" + color_string
+
+    # 验证十六进制颜色格式
+    hex_color_pattern = r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    return bool(re.match(hex_color_pattern, color_string))
 
 
 if __name__ == "__main__":
