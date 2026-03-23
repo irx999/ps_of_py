@@ -42,7 +42,7 @@ def load_ps_settings():
         st.badge(str(psd_name_path), icon="📄")
 
     with st.expander("导出配置", expanded=True, icon="⚙️"):
-        c1 = st.columns([1, 1, 1.5])
+        c1 = st.columns([1, 1, 1])
         with c1[0]:
             export_folder = st_folder_picker(
                 "设置导出文件夹",
@@ -53,6 +53,40 @@ def load_ps_settings():
         with c1[1]:
             if st.button("打开导出文件夹", icon="📂"):
                 os.startfile(str(export_folder))
+        with c1[2]:
+
+            @st.dialog("确认删除", width="small")
+            def confirm_delete():
+                st.write("确定要清空此文件夹吗？")
+                st.write(f"路径: {export_folder}")
+
+                if export_folder == os.getcwd() or str(export_folder) == os.getcwd():
+                    st.warning("请勿删除软件目录", icon="⚠️")
+                    is_cwd = True
+                else:
+                    is_cwd = False
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("确认", type="primary"):
+                        if is_cwd:
+                            st.toast("请勿删除软件目录", icon="⚠️")
+                            st.rerun()
+                        else:
+                            st.toast("正在清空文件夹", icon="🗑️")
+                            # 先删除整个目录
+                            shutil.rmtree(export_folder)
+                            # 再重新创建空目录
+                            os.makedirs(export_folder, exist_ok=True)
+                            st.toast("清空文件夹成功", icon="✅")
+                            st.rerun()
+                with col2:
+                    if st.button("取消"):
+                        st.rerun()
+
+            if st.button("清空导出文件夹", icon="🗑️"):
+                confirm_delete()
+
         st.badge(str(export_folder), icon="📁")
         c2 = st.columns(3)
         file_format = c2[0].segmented_control(
