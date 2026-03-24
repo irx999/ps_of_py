@@ -66,8 +66,8 @@ def load_ps_settings():
                 else:
                     is_cwd = False
 
-                col1, col2 = st.columns(2)
-                with col1:
+                col = st.columns(2, vertical_alignment="center")
+                with col[0]:
                     if st.button("确认", type="primary"):
                         if is_cwd:
                             st.toast("请勿删除软件目录", icon="⚠️")
@@ -80,7 +80,7 @@ def load_ps_settings():
                             os.makedirs(export_folder, exist_ok=True)
                             st.toast("清空文件夹成功", icon="✅")
                             st.rerun()
-                with col2:
+                with col[1]:
                     if st.button("取消"):
                         st.rerun()
 
@@ -91,7 +91,7 @@ def load_ps_settings():
         c2 = st.columns(3)
         file_format = c2[0].segmented_control(
             "导出格式",
-            ["png", "jpg"],
+            ["png", "jpg", "pdf", "gif"],
             key="file_format",
             default=ps_of_py_config.get("file_format", "png"),
         )
