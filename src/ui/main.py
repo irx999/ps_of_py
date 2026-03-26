@@ -109,11 +109,20 @@ def load_ps_settings():
             selection_mode="single",
         )
         c3 = st.columns([1, 1, 1])
-        suffix = c3[0].text_input("文件名后缀", "", key="suffix", icon="📄")
+        suffix = c3[0].text_input(
+            "文件名后缀",
+            value=ps_of_py_config.get("suffix", ""),
+            key="suffix",
+            icon="📄",
+            placeholder="suffix",
+        )
         need_merge_suffix = c3[1].text_input(
             "合并后缀",
+            value=ps_of_py_config.get("need_merge_suffix", ""),
             key="need_merge_suffix",
-            value=ps_of_py_config.get("need_merge_suffix", "(1)"),
+            icon="📄",
+            placeholder="need_merge_suffix",
+            autocomplete="off",
         )
         need_merge_width = c3[2].number_input(
             "合并宽度",
