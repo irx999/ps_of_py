@@ -2,9 +2,9 @@ import os
 import shutil
 
 import streamlit as st
+from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from streamlit import session_state as ss
 
-from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 from src.utils.config_manager import ConfigManager
 
@@ -66,8 +66,11 @@ def load_ps_settings():
                 else:
                     is_cwd = False
 
-                col = st.columns(2, vertical_alignment="center")
-                with col[0]:
+                left, right = st.columns(2, vertical_alignment="center")
+                left.space("stretch")
+
+                with st.container(horizontal=True):
+                    st.space("stretch")
                     if st.button("确认", type="primary"):
                         if is_cwd:
                             st.toast("请勿删除软件目录", icon="⚠️")
@@ -80,9 +83,10 @@ def load_ps_settings():
                             os.makedirs(export_folder, exist_ok=True)
                             st.toast("清空文件夹成功", icon="✅")
                             st.rerun()
-                with col[1]:
+                    st.space("stretch")
                     if st.button("取消"):
                         st.rerun()
+                    st.space("stretch")
 
             if st.button("清空导出文件夹", icon="🗑️"):
                 confirm_delete()
