@@ -142,13 +142,12 @@ class Photoshop:
                 "name": self.ps_session.active_document.name,
                 "psd_file_path": self.psd_file_path,
                 "psd_size": f"width: {self.doc.width:.0f}, height: {self.doc.height:.0f}",
-                "all_layer": self.layer_factory.get_all_layers(),
+                "all_layer": self.layer_factory.get_all_layers_info(),
             }
 
-    def get_all_layers(self) -> list[dict]:
+    def get_all_layers_info(self) -> list[dict]:
         """返回所有图层信息"""
-        with self:
-            return self.layer_factory.get_all_layers()
+        return self.layer_factory.get_all_layers_info()
 
     def ps_saveas(self, export_name: str):
         """保存文件到指定路径"""

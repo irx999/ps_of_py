@@ -14,4 +14,5 @@ class TestNewModule(unittest.TestCase):
         )
 
     def test_new_change(self):
-        print(self.ps.get_all_layers())
+        with self.ps:
+            print(self.ps.get_all_layers_info())
