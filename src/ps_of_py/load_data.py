@@ -139,11 +139,14 @@ class LoadData:
                                     layer_info["textItem"]["contents"] = row_dict[
                                         header
                                     ]
-                            # 修复数据错误, 这里统一转化成str 格式 并移除 .0 并且这个.0 必须是结尾
 
-                            text_content = str(layer_info["textItem"]["contents"])
-                            if text_content.endswith(".0"):
-                                layer_info["textItem"]["contents"] = text_content[:-2]
+                            # 修复数据错误, 这里统一转化成str 格式 并移除 .0 并且这个.0 必须是结尾
+                            text_content = layer_info["textItem"]["contents"]
+                            if isinstance(text_content, (float, int)):
+                                text_content = str(text_content)
+                                if text_content.endswith(".0"):
+                                    text_content = text_content[:-2]
+                                layer_info["textItem"]["contents"] = text_content
                             else:
                                 layer_info["textItem"]["contents"] = text_content
 
@@ -159,7 +162,13 @@ class LoadData:
                             else:
                                 layer_info["图层路径"] = layer_list
                             # 匹配单元格内容
-                            cell_value_parts = row_dict[header].split("|")
+                            cell_value_part = row_dict[header]
+                            if isinstance(cell_value_part, (float, int)):
+                                cell_value_part = str(cell_value_part)
+                                if cell_value_part.endswith(".0"):
+                                    cell_value_part = cell_value_part[:-2]
+                            cell_value_parts = cell_value_part.split("|")
+
                             match cell_value_parts:
                                 # 如果是T或F, 则直接设置visible属性
                                 case [str(layer_name), "T"]:
@@ -170,7 +179,7 @@ class LoadData:
                                     layer_info["visible"] = False
                                 # 如果没有, 默认为True
                                 case _:
-                                    layer_info["图层路径"].append(row_dict[header])
+                                    layer_info["图层路径"].append(cell_value_parts[0])
                                     layer_info["visible"] = True
 
                         # 匹配其他信息

@@ -2,9 +2,9 @@ import os
 import shutil
 
 import streamlit as st
+from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from streamlit import session_state as ss
 
-from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 from src.utils.config_manager import ConfigManager
 
@@ -33,10 +33,10 @@ def load_ps_settings():
             if st.button("获取psd信息", icon="📄"):
                 with c1[2].spinner("处理中...", show_time=True):
                     try:
-                        ps_settings = ss["ps_settings"]
-                        ps = Photoshop(**ps_settings)
-                        ss["psd_info"] = ps.get_psd_info()
-                        # ss["all_layers_info"] = ps.get_all_layers_info()
+                        ps_settings = ss.get("ps_settings", {})
+                        import time
+
+                        run_ps(ps_settings, time.time())
                         st.toast("获取psd信息成功", icon="✅")
                     except Exception as e:
                         st.error(e)
@@ -150,66 +150,75 @@ def load_ps_settings():
     ss["ps_settings"] = settings
 
 
-def run_ps(ps_settings: dict, load_data):
+def run_ps(ps_settings: dict, load_data: LoadData | float = None):
     ps = Photoshop(**ps_settings)
     with st.spinner("执行PS任务中", show_time=True):
         with ps:
+            st.write(ps.__hash__())
+            ss["psd_info"] = ps.get_psd_info()
             ss["all_layers_info"] = ps.get_all_layers_info()
             # for merge_name in load_data.merge_names:
 
-            merge_dict = {}
-            for task in load_data.selected_skus():
-                merge_list = task["任务名"].split("|")
-                if len(merge_list) > 1:
-                    if merge_list[0] not in merge_dict:
-                        merge_dict[merge_list[0]] = []
-                    merge_dict[merge_list[0]].append(
-                        merge_list[1] + ps.suffix + "." + ps.file_format
-                    )
+            if isinstance(load_data, LoadData):
+                merge_dict = {}
+                for task in load_data.selected_skus():
+                    merge_list = task["任务名"].split("|")
+                    if len(merge_list) > 1:
+                        if merge_list[0] not in merge_dict:
+                            merge_dict[merge_list[0]] = []
+                        merge_dict[merge_list[0]].append(
+                            merge_list[1] + ps.suffix + "." + ps.file_format
+                        )
 
-                ps.core(task["任务名"], task["修改信息"])
-                ss["ps_of_py_logs"].append(
-                    "保存成功: " + ps.export_folder + "/" + merge_list[0] + ps.suffix
-                )
-
-            # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
-        st.toast("PS任务执行完成", icon="✅")
-    if ps_settings["need_merge"]:
-        with st.spinner("执行合并任务中", show_time=True):
-            for merge_name, merge_list in merge_dict.items():
-                try:
-                    merged_output_path = Image_utils.merge_images(
-                        ps.export_folder + "/" + merge_name,
-                        merge_list,
-                        merge_name
-                        + ps_settings["need_merge_suffix"]
-                        + "."
-                        + ps_settings["file_format"],
-                        width=ps_settings["need_merge_width"],
-                    )
+                    ps.core(task["任务名"], task["修改信息"])
                     ss["ps_of_py_logs"].append(
-                        "合并成功: "
+                        "保存成功: "
                         + ps.export_folder
                         + "/"
-                        + merge_name
-                        + ps_settings["need_merge_suffix"]
+                        + merge_list[0]
+                        + ps.suffix
                     )
 
-                    # 将merge_list 和 merged_output_path中的文件全部复制到一个 综合的文件夹中去
-                    汇总_文件夹 = ps.export_folder + "/" + "汇总" + "/"
-                    if not os.path.exists(汇总_文件夹):
-                        os.makedirs(汇总_文件夹)
-                    for file in merge_list:
-                        input_folder = ps.export_folder + "/" + merge_name
+                # ps.app.doJavaScript(f'alert("save to jpg: {ps.export_folder}")')
+            st.toast("PS任务执行完成", icon="✅")
+            if ps_settings["need_merge"]:
+                with st.spinner("执行合并任务中", show_time=True):
+                    for merge_name, merge_list in merge_dict.items():
+                        try:
+                            merged_output_path = Image_utils.merge_images(
+                                ps.export_folder + "/" + merge_name,
+                                merge_list,
+                                merge_name
+                                + ps_settings["need_merge_suffix"]
+                                + "."
+                                + ps_settings["file_format"],
+                                width=ps_settings["need_merge_width"],
+                            )
+                            ss["ps_of_py_logs"].append(
+                                "合并成功: "
+                                + ps.export_folder
+                                + "/"
+                                + merge_name
+                                + ps_settings["need_merge_suffix"]
+                            )
 
-                        shutil.copy2(os.path.join(input_folder, file), 汇总_文件夹)
+                            # 将merge_list 和 merged_output_path中的文件全部复制到一个 综合的文件夹中去
+                            汇总_文件夹 = ps.export_folder + "/" + "汇总" + "/"
+                            if not os.path.exists(汇总_文件夹):
+                                os.makedirs(汇总_文件夹)
+                            for file in merge_list:
+                                input_folder = ps.export_folder + "/" + merge_name
 
-                    shutil.copy2(merged_output_path, 汇总_文件夹)
+                                shutil.copy2(
+                                    os.path.join(input_folder, file), 汇总_文件夹
+                                )
 
-                except Exception as e:
-                    st.error(e)
+                            shutil.copy2(merged_output_path, 汇总_文件夹)
 
-        st.toast("合并任务执行完成", icon="✅")
+                        except Exception as e:
+                            st.error(e)
+
+                st.toast("合并任务执行完成", icon="✅")
 
 
 def show():
@@ -249,8 +258,11 @@ def show():
                 st.toast(e, icon="❌")
 
     with tab2:
+        if st.button("加载psd信息"):
+            with st.spinner("处理中...", show_time=True):
+                ps_settings = ss.get("ps_settings", {})
+                run_ps(ps_settings, None)
         st.write(ss.get("psd_info", {}))
-
         st.write(ss.get("all_layers_info", {}))
     with tab3:
         pass

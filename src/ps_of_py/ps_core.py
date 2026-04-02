@@ -65,6 +65,8 @@ class Photoshop:
         self.layer_factory.restore_all_layers_to_initial()
         if self.colse_ps:
             self.doc.close()
+        self.app = None
+        logger.info("关闭Photoshop会话成功")
 
     def _init_ps_session(self):
         """初始化Photoshop会话"""
@@ -73,6 +75,7 @@ class Photoshop:
             with Session(file_path=self.psd_file_path, action="open") as ps_session:
                 self.ps_session = ps_session
                 self.doc = ps_session.active_document
+                logger.info("初始化Photoshop会话成功")
 
                 # 使用工厂创建导出选项
                 self.saveoptions = ExportOptionsFactory.create_export_options(
@@ -137,13 +140,15 @@ class Photoshop:
 
     def get_psd_info(self) -> dict:
         """返回当前psd文件信息"""
-        with self:
-            return {
-                "name": self.ps_session.active_document.name,
-                "psd_file_path": self.psd_file_path,
-                "psd_size": f"width: {self.doc.width:.0f}, height: {self.doc.height:.0f}",
-                "all_layer": self.layer_factory.get_all_layers_info(),
-            }
+
+        info = {
+            "name": self.ps_session.active_document.name,
+            "psd_file_path": self.psd_file_path,
+            "psd_size": f"width: {self.doc.width:.0f}, height: {self.doc.height:.0f}",
+            # "all_layer": self.layer_factory.get_all_layers_info(),
+        }
+
+        return info
 
     def get_all_layers_info(self) -> list[dict]:
         """返回所有图层信息"""
