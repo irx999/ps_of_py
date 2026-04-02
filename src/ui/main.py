@@ -2,9 +2,9 @@ import os
 import shutil
 
 import streamlit as st
-from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from streamlit import session_state as ss
 
+from plugins.ps_of_py.src.ps_of_py import Image_utils, LoadData, Photoshop
 from src.ui.utils import st_file_picker, st_folder_picker
 from src.utils.config_manager import ConfigManager
 
@@ -36,6 +36,7 @@ def load_ps_settings():
                         ps_settings = ss["ps_settings"]
                         ps = Photoshop(**ps_settings)
                         ss["psd_info"] = ps.get_psd_info()
+                        # ss["all_layers_info"] = ps.get_all_layers_info()
                         st.toast("获取psd信息成功", icon="✅")
                     except Exception as e:
                         st.error(e)
@@ -153,6 +154,7 @@ def run_ps(ps_settings: dict, load_data):
     ps = Photoshop(**ps_settings)
     with st.spinner("执行PS任务中", show_time=True):
         with ps:
+            ss["all_layers_info"] = ps.get_all_layers_info()
             # for merge_name in load_data.merge_names:
 
             merge_dict = {}
@@ -249,6 +251,7 @@ def show():
     with tab2:
         st.write(ss.get("psd_info", {}))
 
+        st.write(ss.get("all_layers_info", {}))
     with tab3:
         pass
 

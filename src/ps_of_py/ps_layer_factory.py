@@ -1,6 +1,7 @@
 """图层工厂"""
 
 import time
+from typing import Any, Dict, List
 
 from loguru import logger
 from photoshop import Session
@@ -24,23 +25,111 @@ class LayerFactory:
 
         self.run_time_record: dict = {}  # 运行时间记录
 
-    def get_all_layers(self) -> list[LayerSet | ArtLayer]:
-        """获取所有图层
-        :return: 图层信息
+    def get_all_layers_info(self) -> List[Dict[str, Any]]:
+        """获取所有图层的详细信息
+        :return: 包含图层详细信息的列表
         """
-        layers = []
-        layers.append(
-            {"TOP": [layer.name for layer in self.ps_session.active_document.artLayers]}
+        layers_info = []
+
+        # 获取顶层图层
+        for art_layer in self.ps_session.active_document.artLayers:
+            layer_info = self._extract_art_layer_info(art_layer, "TOP")
+            layers_info.append(layer_info)
+
+        # 获取图层集及其子图层
+        for layer_set in self.ps_session.active_document.layerSets:
+            layer_set_info = self._extract_layer_set_info(layer_set, "TOP")
+            layers_info.append(layer_set_info)
+
+        return layers_info
+
+    def _extract_art_layer_info(
+        self, art_layer, parent_path: str = ""
+    ) -> Dict[str, Any]:
+        """提取单个图层的详细信息"""
+        layer_info = {
+            "name": art_layer.name,
+            "type": "ArtLayer",
+            "parent": parent_path,
+            "visible": art_layer.visible,
+            "locked": getattr(art_layer, "allLocked", False),
+            "position": {
+                "left": float(art_layer.bounds[0]),
+                "top": float(art_layer.bounds[1]),
+                "right": float(art_layer.bounds[2]),
+                "bottom": float(art_layer.bounds[3]),
+            },
+        }
+
+        # 检查是否为文本图层 - 使用最可靠的方式：直接尝试访问 textItem
+        layer_info["is_text"] = False
+        try:
+            # 直接检查 textItem 属性是否存在且不为 None
+            if hasattr(art_layer, "textItem"):
+                text_item = art_layer.textItem
+                if text_item is not None:
+                    # 尝试访问 textItem 的一个基本属性来确认它是有效的文本项
+                    _ = text_item.contents
+                    layer_info["is_text"] = True
+                    layer_info["text_info"] = {
+                        "contents": getattr(text_item, "contents", ""),
+                        "font": getattr(text_item, "font", ""),
+                        "size": float(getattr(text_item, "size", 12)),
+                        "color": self._get_text_color(text_item),
+                    }
+        except Exception:
+            # 如果任何操作失败，说明这不是文本图层或无法访问文本信息
+            layer_info["is_text"] = False
+
+        return layer_info
+
+    def _extract_layer_set_info(
+        self, layer_set, parent_path: str = ""
+    ) -> Dict[str, Any]:
+        """提取图层集的详细信息及其子图层"""
+        current_path = (
+            f"{parent_path}/{layer_set.name}"
+            if parent_path != "TOP"
+            else layer_set.name
         )
 
-        # 构建图层集及其子图层的详细信息
-        for layer_set in self.ps_session.active_document.layerSets:
-            layers_in_set = [layer.name for layer in layer_set.artLayers] + [
-                layer.name for layer in layer_set.layerSets
-            ]
-            layers.append(f"{layer_set.name}: {layers_in_set}")
+        layer_set_info: Dict[str, Any] = {
+            "name": layer_set.name,
+            "type": "LayerSet",
+            "parent": parent_path,
+            "visible": layer_set.visible,
+            "locked": getattr(layer_set, "allLocked", False),
+            "is_group": True,
+            "children": [],
+        }
 
-        return layers
+        # 添加子图层
+        for art_layer in layer_set.artLayers:
+            child_info = self._extract_art_layer_info(art_layer, current_path)
+            layer_set_info["children"].append(child_info)
+
+        # 添加子图层集
+        for child_layer_set in layer_set.layerSets:
+            child_info = self._extract_layer_set_info(child_layer_set, current_path)
+            layer_set_info["children"].append(child_info)
+
+        return layer_set_info
+
+    def _get_text_color(self, text_item):
+        """获取文本颜色的十六进制表示"""
+        try:
+            if hasattr(text_item, "color") and hasattr(text_item.color, "rgb"):
+                font_color = text_item.color.rgb
+                # 确保颜色值是整数，因为 rgb_to_hex 需要整数
+                red = int(getattr(font_color, "red", 0))
+                green = int(getattr(font_color, "green", 0))
+                blue = int(getattr(font_color, "blue", 0))
+                return ColorFactory.rgb_to_hex(red, green, blue)
+            else:
+                return "#000000"
+        except Exception as e:
+            logger.warning(f"无法获取文本颜色: {e}")
+            return "#000000"  # 默认黑色
 
     def get_layer_by_layername(self, layername: str) -> list[LayerSet | ArtLayer]:
         """根据层名获取图层
