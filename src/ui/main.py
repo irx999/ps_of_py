@@ -11,7 +11,7 @@ from src.utils.config_manager import ConfigManager
 if ss.get("ps_of_py_logs", "空") == "空":
     ss.ps_of_py_logs = []
 
-ps_of_py_config = ConfigManager("assets/config.json", "ps_of_py_config")
+ps_of_py_config = ConfigManager("config.json", "ps_of_py_config")
 
 
 def load_ps_settings():
@@ -104,7 +104,7 @@ def load_ps_settings():
             "完成后关闭PSD",
             options=[True, False],
             key="close_ps",
-            default=ps_of_py_config.get("colse_ps", "png"),
+            default=ps_of_py_config.get("colse_ps", False),
         )
         need_merge = c2[2].segmented_control(
             "同文件夹是否合并",
