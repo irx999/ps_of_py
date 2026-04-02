@@ -154,6 +154,7 @@ def run_ps(ps_settings: dict, load_data):
     ps = Photoshop(**ps_settings)
     with st.spinner("执行PS任务中", show_time=True):
         with ps:
+            ss["all_layers_info"] = ps.get_all_layers_info()
             # for merge_name in load_data.merge_names:
 
             merge_dict = {}
