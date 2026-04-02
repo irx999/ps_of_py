@@ -145,6 +145,11 @@ class Photoshop:
                 "all_layer": self.layer_factory.get_all_layers(),
             }
 
+    def get_all_layers(self) -> list[dict]:
+        """返回所有图层信息"""
+        with self:
+            return self.layer_factory.get_all_layers()
+
     def ps_saveas(self, export_name: str):
         """保存文件到指定路径"""
 
